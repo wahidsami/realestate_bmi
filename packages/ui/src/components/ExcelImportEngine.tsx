@@ -890,6 +890,7 @@ export function ExcelImportEngine({ language, onImportComplete }: ExcelImportEng
         const mappedData = resolveRowFields(row);
         const errors: string[] = [];
         const warnings: string[] = [];
+        const allowPropertyImport = kind !== 'project';
 
         // Check Project fields
         let projectAction: 'create' | 'update' | 'none' = 'none';
@@ -976,114 +977,117 @@ export function ExcelImportEngine({ language, onImportComplete }: ExcelImportEng
           };
         }
 
-        // Check Property fields
         let propertyAction: 'create' | 'update' | 'none' = 'none';
         let matchedPropertyId: string | undefined;
-        let propertyTitleAr = mappedData['property.title.ar'];
-        let propertyTitleEn = mappedData['property.title.en'];
-        let propertyPrice = mappedData['property.price'];
-        let propertyArea = mappedData['property.areaSqm'];
-        let propertyLocationAr = mappedData['property.location.ar'];
-        let propertyLocationEn = mappedData['property.location.en'];
-        let propertyAddressAr = mappedData['property.address.ar'];
-        let propertyAddressEn = mappedData['property.address.en'];
-        let propertyTypeAr = mappedData['property.type.ar'];
-        let propertyTypeEn = mappedData['property.type.en'];
-        let unitNum = mappedData['property.unitNumber'];
-        let propertyGoogleMapsLink = mappedData['property.googleMapsLink'];
-        const hasFeaturedImageInput = mappedData['property.featuredImageId'] !== undefined;
-        const hasGalleryImageInput = Array.isArray(mappedData['property.galleryImageIds']) && mappedData['property.galleryImageIds'].length > 0;
-        const hasVideoUploadInput = mappedData['property.videoUploadId'] !== undefined;
-
-        const hasPropertyInput = Boolean(
-          propertyTitleAr ||
-          propertyTitleEn ||
-          propertyPrice !== undefined ||
-          propertyArea !== undefined ||
-          propertyTypeAr ||
-          propertyTypeEn ||
-          unitNum ||
-          propertyGoogleMapsLink ||
-          propertyLocationAr ||
-          propertyLocationEn ||
-          propertyAddressAr ||
-          propertyAddressEn
-        );
         let prFields: Partial<Property> = {};
+        let hasPropertyInput = false;
 
-        if (hasPropertyInput) {
-          const resolvedTitleAr = String(propertyTitleAr || unitNum || mappedData['project.name.ar'] || mappedData['project.name.en'] || 'عقار');
-          const resolvedTitleEn = String(propertyTitleEn || unitNum || mappedData['project.name.en'] || mappedData['project.name.ar'] || 'Property');
-          const resolvedTypeAr = String(propertyTypeAr || 'عقار');
-          const resolvedTypeEn = String(propertyTypeEn || 'Property');
+        if (allowPropertyImport) {
+          const propertyTitleAr = mappedData['property.title.ar'];
+          const propertyTitleEn = mappedData['property.title.en'];
+          const propertyPrice = mappedData['property.price'];
+          const propertyArea = mappedData['property.areaSqm'];
+          const propertyLocationAr = mappedData['property.location.ar'];
+          const propertyLocationEn = mappedData['property.location.en'];
+          const propertyAddressAr = mappedData['property.address.ar'];
+          const propertyAddressEn = mappedData['property.address.en'];
+          const propertyTypeAr = mappedData['property.type.ar'];
+          const propertyTypeEn = mappedData['property.type.en'];
+          const unitNum = mappedData['property.unitNumber'];
+          const propertyGoogleMapsLink = mappedData['property.googleMapsLink'];
+          const hasFeaturedImageInput = mappedData['property.featuredImageId'] !== undefined;
+          const hasGalleryImageInput = Array.isArray(mappedData['property.galleryImageIds']) && mappedData['property.galleryImageIds'].length > 0;
+          const hasVideoUploadInput = mappedData['property.videoUploadId'] !== undefined;
 
-          // Check if Property already exists inside the system
-          // Match criteria: matching title, or matching Unit Number inside the matched Project
-          let matchPropTitleAr = String(propertyTitleAr || unitNum || '').toLowerCase();
-          let matchPropTitleEn = String(propertyTitleEn || unitNum || '').toLowerCase();
+          hasPropertyInput = Boolean(
+            propertyTitleAr ||
+            propertyTitleEn ||
+            propertyPrice !== undefined ||
+            propertyArea !== undefined ||
+            propertyTypeAr ||
+            propertyTypeEn ||
+            unitNum ||
+            propertyGoogleMapsLink ||
+            propertyLocationAr ||
+            propertyLocationEn ||
+            propertyAddressAr ||
+            propertyAddressEn
+          );
 
-          const existingProp = systemProperties.find(p => {
-            const sysAr = String(p.title?.ar || '').toLowerCase();
-            const sysEn = String(p.title?.en || '').toLowerCase();
-            // If project is mapped, match by unitNumber under that project
-            if (matchedProjectId && p.projectId === matchedProjectId && unitNum && p.unitNumber === String(unitNum)) {
-              return true;
+          if (hasPropertyInput) {
+            const resolvedTitleAr = String(propertyTitleAr || unitNum || mappedData['project.name.ar'] || mappedData['project.name.en'] || 'عقار');
+            const resolvedTitleEn = String(propertyTitleEn || unitNum || mappedData['project.name.en'] || mappedData['project.name.ar'] || 'Property');
+            const resolvedTypeAr = String(propertyTypeAr || 'عقار');
+            const resolvedTypeEn = String(propertyTypeEn || 'Property');
+
+            // Check if Property already exists inside the system
+            // Match criteria: matching title, or matching Unit Number inside the matched Project
+            let matchPropTitleAr = String(propertyTitleAr || unitNum || '').toLowerCase();
+            let matchPropTitleEn = String(propertyTitleEn || unitNum || '').toLowerCase();
+
+            const existingProp = systemProperties.find(p => {
+              const sysAr = String(p.title?.ar || '').toLowerCase();
+              const sysEn = String(p.title?.en || '').toLowerCase();
+              // If project is mapped, match by unitNumber under that project
+              if (matchedProjectId && p.projectId === matchedProjectId && unitNum && p.unitNumber === String(unitNum)) {
+                return true;
+              }
+              return (matchPropTitleAr && sysAr === matchPropTitleAr) ||
+                     (matchPropTitleEn && sysEn === matchPropTitleEn);
+            });
+
+            if (existingProp) {
+              propertyAction = 'update';
+              matchedPropertyId = existingProp.id;
+            } else {
+              propertyAction = 'create';
             }
-            return (matchPropTitleAr && sysAr === matchPropTitleAr) || 
-                   (matchPropTitleEn && sysEn === matchPropTitleEn);
-          });
 
-          if (existingProp) {
-            propertyAction = 'update';
-            matchedPropertyId = existingProp.id;
-          } else {
-            propertyAction = 'create';
+            prFields = {
+              title: {
+                ar: resolvedTitleAr,
+                en: resolvedTitleEn
+              },
+              description: {
+                ar: String(mappedData['property.description.ar'] || ''),
+                en: String(mappedData['property.description.en'] || '')
+              },
+              price: Number(propertyPrice || 0),
+              location: {
+                ar: String(propertyLocationAr || mappedData['project.location.ar'] || ''),
+                en: String(propertyLocationEn || mappedData['project.location.en'] || '')
+              },
+              address: {
+                ar: String(propertyAddressAr || propertyLocationAr || ''),
+                en: String(propertyAddressEn || propertyLocationEn || '')
+              },
+              bedrooms: Number(mappedData['property.bedrooms'] || 0),
+              bathrooms: Number(mappedData['property.bathrooms'] || 0),
+              areaSqm: Number(propertyArea || 0),
+              status: (mappedData['property.status'] as any) || 'available',
+              type: {
+                ar: resolvedTypeAr,
+                en: resolvedTypeEn
+              },
+              googleMapsLink: String(propertyGoogleMapsLink || ''),
+              unitNumber: unitNum ? String(unitNum) : undefined,
+              livingRooms: mappedData['property.livingRooms'] !== undefined ? Number(mappedData['property.livingRooms']) : undefined,
+              balconies: mappedData['property.balconies'] !== undefined ? Number(mappedData['property.balconies']) : undefined,
+              parkingSpaces: mappedData['property.parkingSpaces'] !== undefined ? Number(mappedData['property.parkingSpaces']) : undefined,
+              currency: String(mappedData['property.currency'] || 'SAR'),
+              saleOrRent: (mappedData['property.saleOrRent'] as any) || 'sale',
+              featured: Boolean(mappedData['property.featured']),
+              featuredImageId: hasFeaturedImageInput
+                ? String(mappedData['property.featuredImageId'])
+                : (propertyAction === 'create' ? PLACEHOLDER_PROPERTY_FEATURED_MEDIA_ID : undefined),
+              galleryImageIds: hasGalleryImageInput
+                ? mappedData['property.galleryImageIds']
+                : (propertyAction === 'create' ? [PLACEHOLDER_PROPERTY_GALLERY_MEDIA_ID] : undefined),
+              videoUploadId: hasVideoUploadInput
+                ? String(mappedData['property.videoUploadId'])
+                : undefined,
+            };
           }
-
-          prFields = {
-            title: {
-              ar: resolvedTitleAr,
-              en: resolvedTitleEn
-            },
-            description: {
-              ar: String(mappedData['property.description.ar'] || ''),
-              en: String(mappedData['property.description.en'] || '')
-            },
-            price: Number(propertyPrice || 0),
-            location: {
-              ar: String(propertyLocationAr || mappedData['project.location.ar'] || ''),
-              en: String(propertyLocationEn || mappedData['project.location.en'] || '')
-            },
-            address: {
-              ar: String(propertyAddressAr || propertyLocationAr || ''),
-              en: String(propertyAddressEn || propertyLocationEn || '')
-            },
-            bedrooms: Number(mappedData['property.bedrooms'] || 0),
-            bathrooms: Number(mappedData['property.bathrooms'] || 0),
-            areaSqm: Number(propertyArea || 0),
-            status: (mappedData['property.status'] as any) || 'available',
-            type: {
-              ar: resolvedTypeAr,
-              en: resolvedTypeEn
-            },
-            googleMapsLink: String(propertyGoogleMapsLink || ''),
-            unitNumber: unitNum ? String(unitNum) : undefined,
-            livingRooms: mappedData['property.livingRooms'] !== undefined ? Number(mappedData['property.livingRooms']) : undefined,
-            balconies: mappedData['property.balconies'] !== undefined ? Number(mappedData['property.balconies']) : undefined,
-            parkingSpaces: mappedData['property.parkingSpaces'] !== undefined ? Number(mappedData['property.parkingSpaces']) : undefined,
-            currency: String(mappedData['property.currency'] || 'SAR'),
-            saleOrRent: (mappedData['property.saleOrRent'] as any) || 'sale',
-            featured: Boolean(mappedData['property.featured']),
-            featuredImageId: hasFeaturedImageInput
-              ? String(mappedData['property.featuredImageId'])
-              : (propertyAction === 'create' ? PLACEHOLDER_PROPERTY_FEATURED_MEDIA_ID : undefined),
-            galleryImageIds: hasGalleryImageInput
-              ? mappedData['property.galleryImageIds']
-              : (propertyAction === 'create' ? [PLACEHOLDER_PROPERTY_GALLERY_MEDIA_ID] : undefined),
-            videoUploadId: hasVideoUploadInput
-              ? String(mappedData['property.videoUploadId'])
-              : undefined,
-          };
         }
 
         // Warn if neither project nor property has valid mapping inputs on this row
@@ -1173,7 +1177,7 @@ export function ExcelImportEngine({ language, onImportComplete }: ExcelImportEng
         }
 
         // Perform Property / Unit transaction
-        if (item.propertyAction !== 'none' && item.propertyFields) {
+        if (kind !== 'project' && item.propertyAction !== 'none' && item.propertyFields) {
           const propFields = { ...item.propertyFields };
           // set the associated project link ID
           if (projectId) {
