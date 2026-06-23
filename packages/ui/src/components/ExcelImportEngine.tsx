@@ -201,7 +201,7 @@ const TARGET_FIELDS: TargetField[] = [
     labelAr: 'عنوان العقار (العربية)',
     labelEn: 'Property Title (Arabic)',
     entity: 'property',
-    required: true,
+    required: false,
     type: 'string',
     synonyms: ['عنوان العقار', 'اسم العقار', 'وصف الوحدة عربي', 'عنوان الإعلان عربي', 'property title ar', 'property_title_ar', 'title ar', 'property name ar']
   },
@@ -210,7 +210,7 @@ const TARGET_FIELDS: TargetField[] = [
     labelAr: 'عنوان العقار (الإنجليزية)',
     labelEn: 'Property Title (English)',
     entity: 'property',
-    required: true,
+    required: false,
     type: 'string',
     synonyms: ['عنوان العقار بالانجليزي', 'property title', 'property name en', 'property title en', 'property_title_en', 'title', 'title en']
   },
@@ -761,7 +761,8 @@ export function ExcelImportEngine({ language, onImportComplete }: ExcelImportEng
       TARGET_FIELDS.some((field) => field.entity === 'project' && matchesTemplateHeader(header, field))
     ).length;
     const propertyHeaderCount = headers.filter((header) =>
-      TARGET_FIELDS.some((field) => field.entity === 'property' && matchesTemplateHeader(header, field))
+      TARGET_FIELDS.some((field) => field.entity === 'property' && matchesTemplateHeader(header, field)) &&
+      !TARGET_FIELDS.some((field) => field.entity === 'project' && matchesTemplateHeader(header, field))
     ).length;
 
     setExcelHeaders(headers);
