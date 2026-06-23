@@ -11,4 +11,4 @@ cmds = [
 ]
 
 [start]
-cmd = "npm run --workspace=@bina/api prisma:migrate-deploy; npm run start --workspace=@bina/api"
+cmd = "npm run --workspace=@bina/api prisma:migrate-deploy && npm run --workspace=@bina/api seed && npm run start --workspace=@bina/api"

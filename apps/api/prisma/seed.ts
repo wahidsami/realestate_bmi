@@ -34,10 +34,12 @@ const cloneJson = <T>(value: T): T => JSON.parse(JSON.stringify(value));
 const SECTION_TEMPLATES: Array<{ key: string; nameAr: string; nameEn: string; category: string; descAr?: string; descEn?: string; sectionData: unknown }> = [];
 const PAGE_TEMPLATES: Array<{ key: string; nameAr: string; nameEn: string; category: string; descAr?: string; descEn?: string; sections: unknown[] }> = [];
 
+const SEED_ASSETS_DIR = path.resolve(path.dirname(new URL(import.meta.url).pathname), 'seed-assets');
+
 const rootPlaceholderFiles = [
   {
     id: PLACEHOLDER_PROPERTY_FEATURED_MEDIA_ID,
-    sourceFile: path.resolve(process.cwd(), '..', '..', 'placeholder1.png'),
+    sourceFile: path.join(SEED_ASSETS_DIR, 'placeholder1.png'),
     originalName: 'placeholder1.png',
     titleAr: 'صورة افتراضية للعقار الرئيسي',
     titleEn: 'Property Featured Placeholder',
@@ -46,7 +48,7 @@ const rootPlaceholderFiles = [
   },
   {
     id: PLACEHOLDER_PROPERTY_GALLERY_MEDIA_ID,
-    sourceFile: path.resolve(process.cwd(), '..', '..', 'placeholder2.png'),
+    sourceFile: path.join(SEED_ASSETS_DIR, 'placeholder2.png'),
     originalName: 'placeholder2.png',
     titleAr: 'صورة افتراضية للمعرض',
     titleEn: 'Property Gallery Placeholder',
