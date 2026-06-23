@@ -1578,63 +1578,67 @@ export function ExcelImportEngine({ language, onImportComplete }: ExcelImportEng
                     );
                   })}
 
-                  {/* Category Partition Header: Properties */}
-                  <tr className="bg-slate-50 border-y border-slate-150">
-                    <td colSpan={5} className="p-3 font-bold text-teal-700 text-right flex items-center gap-2 justify-end">
-                      <span>{translate("حقول العقارات الفردية والوحدات والأجنحة المخصصة (شقق، فلل، بنتهاوس)", "Individual Properties & Units Inventory Schema Fields")}</span>
-                      <Building2 className="w-4 h-4 text-teal-500" />
-                    </td>
-                  </tr>
-
-                  {TARGET_FIELDS.filter(f => f.entity === 'property').map(field => {
-                    const isMapped = !!mappings[field.key];
-                    return (
-                      <tr key={field.key} className={`hover:bg-slate-50/50 transition-colors ${isMapped ? 'bg-teal-50/10' : ''}`}>
-                        <td className="p-4">
-                          <span className="block font-bold text-[#0F172A]">{language === 'ar' ? field.labelAr : field.labelEn}</span>
-                          <span className="block font-mono text-[9px] text-slate-400 mt-0.5">{field.key}</span>
-                        </td>
-                        <td className="p-4">
-                          <span className="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[10px] font-mono leading-none">
-                            {field.type}
-                          </span>
-                        </td>
-                        <td className="p-4">
-                          {field.required ? (
-                            <span className="text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded text-[9px] font-black uppercase">
-                              {translate("مطلوب للإنشاء", "Required to Create")}
-                            </span>
-                          ) : (
-                            <span className="text-slate-400 text-[10px]">{translate("اختياري", "Optional")}</span>
-                          )}
-                        </td>
-                        <td className="p-4">
-                          <select 
-                            value={mappings[field.key] || ''} 
-                            onChange={(e) => handleMapField(field.key, e.target.value)}
-                            className="w-full max-w-xs px-3 py-1.5 border border-slate-250 border-slate-200 bg-white rounded-lg focus:outline-none focus:border-teal-500 text-xs text-[#1A202C]"
-                          >
-                            <option value="">{translate("-- تجاهل / غير مربوط --", "-- Ignored / Not Mapped --")}</option>
-                            {excelHeaders.map(hdr => (
-                              <option key={hdr} value={hdr}>{hdr}</option>
-                            ))}
-                          </select>
-                        </td>
-                        <td className="p-4 text-center">
-                          {isMapped ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg text-[10px] font-bold">
-                              <Check className="w-3 h-3" />
-                              <span>{translate("تم الربط", "Mapped")}</span>
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-50 text-slate-400 border border-slate-100 rounded-lg text-[10px]">
-                              <span>{translate("تجاهل", "Ignored")}</span>
-                            </span>
-                          )}
+                  {kind !== 'project' && (
+                    <>
+                      {/* Category Partition Header: Properties */}
+                      <tr className="bg-slate-50 border-y border-slate-150">
+                        <td colSpan={5} className="p-3 font-bold text-teal-700 text-right flex items-center gap-2 justify-end">
+                          <span>{translate("حقول العقارات الفردية والوحدات والأجنحة المخصصة (شقق، فلل، بنتهاوس)", "Individual Properties & Units Inventory Schema Fields")}</span>
+                          <Building2 className="w-4 h-4 text-teal-500" />
                         </td>
                       </tr>
-                    );
-                  })}
+
+                      {TARGET_FIELDS.filter(f => f.entity === 'property').map(field => {
+                        const isMapped = !!mappings[field.key];
+                        return (
+                          <tr key={field.key} className={`hover:bg-slate-50/50 transition-colors ${isMapped ? 'bg-teal-50/10' : ''}`}>
+                            <td className="p-4">
+                              <span className="block font-bold text-[#0F172A]">{language === 'ar' ? field.labelAr : field.labelEn}</span>
+                              <span className="block font-mono text-[9px] text-slate-400 mt-0.5">{field.key}</span>
+                            </td>
+                            <td className="p-4">
+                              <span className="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[10px] font-mono leading-none">
+                                {field.type}
+                              </span>
+                            </td>
+                            <td className="p-4">
+                              {field.required ? (
+                                <span className="text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded text-[9px] font-black uppercase">
+                                  {translate("مطلوب للإنشاء", "Required to Create")}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 text-[10px]">{translate("اختياري", "Optional")}</span>
+                              )}
+                            </td>
+                            <td className="p-4">
+                              <select
+                                value={mappings[field.key] || ''}
+                                onChange={(e) => handleMapField(field.key, e.target.value)}
+                                className="w-full max-w-xs px-3 py-1.5 border border-slate-250 border-slate-200 bg-white rounded-lg focus:outline-none focus:border-teal-500 text-xs text-[#1A202C]"
+                              >
+                                <option value="">{translate("-- تجاهل / غير مربوط --", "-- Ignored / Not Mapped --")}</option>
+                                {excelHeaders.map(hdr => (
+                                  <option key={hdr} value={hdr}>{hdr}</option>
+                                ))}
+                              </select>
+                            </td>
+                            <td className="p-4 text-center">
+                              {isMapped ? (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg text-[10px] font-bold">
+                                  <Check className="w-3 h-3" />
+                                  <span>{translate("تم الربط", "Mapped")}</span>
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-50 text-slate-400 border border-slate-100 rounded-lg text-[10px]">
+                                  <span>{translate("تجاهل", "Ignored")}</span>
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </>
+                  )}
                 </tbody>
               </table>
             </div>
