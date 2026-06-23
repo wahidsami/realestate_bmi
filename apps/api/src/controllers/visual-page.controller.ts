@@ -15,7 +15,8 @@ const resolveId = (value: string | string[] | undefined) => {
 export const listVisualPages: RequestHandler = async (req, res, next) => {
   try {
     const query = visualPageQuerySchema.parse(req.query);
-    const result = await visualPageService.listPages(query);
+    const normalizedQuery = req.auth ? query : { ...query, status: query.status || 'published' };
+    const result = await visualPageService.listPages(normalizedQuery);
     res.json({
       success: true,
       data: result,
@@ -38,6 +39,9 @@ export const getVisualPageById: RequestHandler = async (req, res, next) => {
       throw new HttpError(400, 'Page id is required');
     }
     const page = await visualPageService.getPageById(pageId);
+    if (!req.auth && page.status !== 'published') {
+      throw new HttpError(404, 'Visual page not found');
+    }
     res.json({
       success: true,
       data: page,

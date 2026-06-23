@@ -121,12 +121,14 @@ export interface Project {
   id: string;
   name: BilingualText;
   description: BilingualText;
+  developer?: BilingualText;
   location: BilingualText; // Fallback / combined location
   city: BilingualText;
   district: BilingualText;
   address: BilingualText;
   completionDate: string;
-  status: 'available' | 'under-construction' | 'sold-out';
+  units: number;
+  status: 'available' | 'sold' | 'under-construction' | 'sold-out';
   googleMapsLink?: string;
   latitude?: number;
   longitude?: number;

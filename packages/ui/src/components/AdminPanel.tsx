@@ -565,6 +565,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToWebsite }) => {
   const [projectNameEn, setProjectNameEn] = useState('');
   const [projectDescAr, setProjectDescAr] = useState('');
   const [projectDescEn, setProjectDescEn] = useState('');
+  const [projectDeveloperAr, setProjectDeveloperAr] = useState('');
+  const [projectDeveloperEn, setProjectDeveloperEn] = useState('');
   const [projectCityAr, setProjectCityAr] = useState('');
   const [projectCityEn, setProjectCityEn] = useState('');
   const [projectDistrictAr, setProjectDistrictAr] = useState('');
@@ -572,7 +574,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToWebsite }) => {
   const [projectAddressAr, setProjectAddressAr] = useState('');
   const [projectAddressEn, setProjectAddressEn] = useState('');
   const [projectCompletionDate, setProjectCompletionDate] = useState('');
-  const [projectStatus, setProjectStatus] = useState<'available' | 'under-construction' | 'sold-out'>('available');
+  const [projectUnits, setProjectUnits] = useState<string | number>('');
+  const [projectStatus, setProjectStatus] = useState<'available' | 'sold' | 'under-construction' | 'sold-out'>('available');
   const [projectGoogleMapsLink, setProjectGoogleMapsLink] = useState('');
   const [projectLatitude, setProjectLatitude] = useState<string | number>('');
   const [projectLongitude, setProjectLongitude] = useState<string | number>('');
@@ -718,6 +721,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToWebsite }) => {
     setProjectNameEn('');
     setProjectDescAr('');
     setProjectDescEn('');
+    setProjectDeveloperAr('');
+    setProjectDeveloperEn('');
     setProjectCityAr('');
     setProjectCityEn('');
     setProjectDistrictAr('');
@@ -725,6 +730,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToWebsite }) => {
     setProjectAddressAr('');
     setProjectAddressEn('');
     setProjectCompletionDate('');
+    setProjectUnits('');
     setProjectStatus('available');
     setProjectGoogleMapsLink('');
     setProjectLatitude('');
@@ -766,6 +772,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToWebsite }) => {
     setProjectNameEn(proj.name?.en || '');
     setProjectDescAr(proj.description?.ar || '');
     setProjectDescEn(proj.description?.en || '');
+    setProjectDeveloperAr(proj.developer?.ar || '');
+    setProjectDeveloperEn(proj.developer?.en || '');
     setProjectCityAr(proj.city?.ar || '');
     setProjectCityEn(proj.city?.en || '');
     setProjectDistrictAr(proj.district?.ar || '');
@@ -773,7 +781,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToWebsite }) => {
     setProjectAddressAr(proj.address?.ar || '');
     setProjectAddressEn(proj.address?.en || '');
     setProjectCompletionDate(proj.completionDate || '');
-    setProjectStatus(proj.status || 'available');
+    setProjectUnits(proj.units ?? '');
+    setProjectStatus((proj.status as 'available' | 'sold' | 'under-construction' | 'sold-out') || 'available');
     setProjectGoogleMapsLink(proj.googleMapsLink || '');
     setProjectLatitude(proj.latitude || '');
     setProjectLongitude(proj.longitude || '');
@@ -991,6 +1000,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToWebsite }) => {
     const projData: Omit<Project, 'id'> = {
       name: { ar: projectNameAr, en: projectNameEn },
       description: { ar: projectDescAr, en: projectDescEn },
+      developer: { ar: projectDeveloperAr, en: projectDeveloperEn },
       location: { 
         ar: `${projectDistrictAr || ''}، ${projectCityAr || ''}`, 
         en: `${projectDistrictEn || ''}, ${projectCityEn || ''}`
@@ -999,6 +1009,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToWebsite }) => {
       district: { ar: projectDistrictAr, en: projectDistrictEn },
       address: { ar: projectAddressAr, en: projectAddressEn },
       completionDate: projectCompletionDate,
+      units: projectUnits ? Number(projectUnits) : 0,
       status: projectStatus,
       googleMapsLink: projectGoogleMapsLink,
       latitude: projectLatitude ? Number(projectLatitude) : undefined,
@@ -1904,6 +1915,29 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToWebsite }) => {
                       </div>
                     </div>
 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                      <div className="space-y-1.5 text-xs text-right">
+                        <label className="text-slate-500 font-bold block">{language === 'ar' ? 'المطور (العربية)' : 'Developer (Arabic)'}</label>
+                        <input
+                          type="text"
+                          value={projectDeveloperAr}
+                          onChange={(e) => setProjectDeveloperAr(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:bg-white focus:border-slate-400 font-sans text-[#1A202C]"
+                          placeholder={language === 'ar' ? 'شركة بناء وإدارة' : 'Bina & Edarah'}
+                        />
+                      </div>
+                      <div className="space-y-1.5 text-xs text-right" dir="ltr">
+                        <label className="text-slate-500 font-bold block text-left font-sans">{language === 'ar' ? 'المطور (الإنجليزية)' : 'Developer (English)'}</label>
+                        <input
+                          type="text"
+                          value={projectDeveloperEn}
+                          onChange={(e) => setProjectDeveloperEn(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:bg-white focus:border-slate-400 font-sans text-[#1A202C] text-left"
+                          placeholder="Bina & Edarah"
+                        />
+                      </div>
+                    </div>
+
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-2">
                       <div className="space-y-1.5 text-xs text-right">
                         <label className="text-slate-500 font-bold block">{language === 'ar' ? 'تاريخ الانتهاء المحدّد' : 'Target Completion Date'}</label>
@@ -1923,9 +1957,22 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToWebsite }) => {
                           className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-semibold text-[#1A202C]"
                         >
                           <option value="available">{language === 'ar' ? 'متاح للبيع (Available)' : 'Available'}</option>
-                          <option value="under-construction">{language === 'ar' ? 'تحت الإنشاء والتشييد (Under Construction)' : 'Under Construction'}</option>
-                          <option value="sold-out">{language === 'ar' ? 'مباع بالكامل (Sold Out)' : 'Sold Out'}</option>
+                          <option value="under-construction">{language === 'ar' ? 'تحت الإنشاء' : 'Under Construction'}</option>
+                          <option value="sold">{language === 'ar' ? 'مباع (Sold)' : 'Sold'}</option>
+                          <option value="sold-out">{language === 'ar' ? 'مباع بالكامل' : 'Sold Out'}</option>
                         </select>
+                      </div>
+
+                      <div className="space-y-1.5 text-xs text-right">
+                        <label className="text-slate-500 font-bold block">{language === 'ar' ? 'عدد الوحدات' : 'Units Count'}</label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={projectUnits}
+                          onChange={(e) => setProjectUnits(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-mono text-[#1A202C]"
+                          placeholder={language === 'ar' ? 'مثال: 84' : 'e.g. 84'}
+                        />
                       </div>
 
                       <div className="space-y-1.5 text-xs text-right flex flex-col justify-end">
@@ -2442,8 +2489,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToWebsite }) => {
                       <tr>
                         <th className="p-4 font-bold">{language === 'ar' ? 'غلاف المشروع' : 'Cover Snapshot'}</th>
                         <th className="p-4 font-bold">{language === 'ar' ? 'اسم المشروع السكني' : 'Project Name'}</th>
+                        <th className="p-4 font-bold">{language === 'ar' ? 'المطور' : 'Developer'}</th>
                         <th className="p-4 font-bold">{language === 'ar' ? 'مقر المدينة والحي' : 'Location / Territory'}</th>
                         <th className="p-4 font-bold">{language === 'ar' ? 'تاريخ الانتهاء المخطط' : 'Completion'}</th>
+                        <th className="p-4 font-bold">{language === 'ar' ? 'عدد الوحدات' : 'Units'}</th>
                         <th className="p-4 font-bold">{language === 'ar' ? 'الحالة الإدارية' : 'Status'}</th>
                         <th className="p-4 font-bold">{language === 'ar' ? 'المميزات السيو/الرئيسية' : 'Features'}</th>
                         <th className="p-4 text-center font-bold">{language === 'ar' ? 'إجراءات التحكم' : 'Operations'}</th>
@@ -2452,7 +2501,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToWebsite }) => {
                     <tbody className="divide-y divide-slate-100 font-medium">
                       {projects.length === 0 ? (
                         <tr>
-                          <td colSpan={7} className="p-10 text-center text-slate-400 font-sans">
+                          <td colSpan={9} className="p-10 text-center text-slate-400 font-sans">
                             {language === 'ar' ? 'لا يوجد مشاريع مسجلة في محرك التخزين حالياً. الرجاء البدء بالنقر على "اضافة مشروع جديد"' : 'No projects registered. Click "Create New Project" to initialize.'}
                           </td>
                         </tr>
@@ -2472,19 +2521,29 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToWebsite }) => {
                             </td>
                             <td className="p-4 font-black text-slate-900 text-sm">{t(proj.name)}</td>
                             <td className="p-4 text-slate-600">
+                              {proj.developer ? (
+                                <span className="block font-bold">{t(proj.developer)}</span>
+                              ) : (
+                                <span className="block text-slate-300">---</span>
+                              )}
+                            </td>
+                            <td className="p-4 text-slate-600">
                               <span className="block font-bold">{t(proj.city)}</span>
                               <span className="block text-[10px] text-slate-400">{t(proj.district)}</span>
                             </td>
                             <td className="p-4 font-mono text-slate-500 font-bold">{proj.completionDate || '---'}</td>
+                            <td className="p-4 font-mono text-slate-700 font-bold">{proj.units ?? 0}</td>
                             <td className="p-4">
                               <span className={`px-2.5 py-1 inline-block rounded-lg text-[10px] uppercase font-bold text-center ${
                                 proj.status === 'available' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
-                                proj.status === 'under-construction' ? 'bg-amber-50 text-[#B45309] border border-amber-100' :
+                                proj.status === 'under-construction' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
+                                proj.status === 'sold-out' ? 'bg-slate-100 text-slate-700 border border-slate-200' :
                                 'bg-rose-50 text-rose-600 border border-rose-100'
                               }`}>
                                 {proj.status === 'available' ? (language === 'ar' ? 'متاح' : 'Available') :
                                  proj.status === 'under-construction' ? (language === 'ar' ? 'تحت الإنشاء' : 'Under Construction') :
-                                 (language === 'ar' ? 'مباع بالكامل' : 'Sold Out')}
+                                 proj.status === 'sold-out' ? (language === 'ar' ? 'مباع بالكامل' : 'Sold Out') :
+                                 (language === 'ar' ? 'مباع' : 'Sold')}
                               </span>
                             </td>
                             <td className="p-4 space-y-1">

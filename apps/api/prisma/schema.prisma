@@ -291,6 +291,8 @@ model Project {
   nameEn           String
   descriptionAr    String?
   descriptionEn    String?
+  developerAr      String?
+  developerEn      String?
   cityAr           String?
   cityEn           String?
   districtAr       String?
@@ -298,7 +300,8 @@ model Project {
   addressAr        String?
   addressEn        String?
   completionDate   DateTime?
-  status           String   @default("draft")
+  status           String   @default("available")
+  units            Int      @default(0)
   featured         Boolean  @default(false)
   coverMediaId     String?
   seoTitleAr       String?

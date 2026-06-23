@@ -8,6 +8,8 @@ export type ProjectRecord = {
   nameEn: string;
   descriptionAr: string | null;
   descriptionEn: string | null;
+  developerAr: string | null;
+  developerEn: string | null;
   cityAr: string | null;
   cityEn: string | null;
   districtAr: string | null;
@@ -16,6 +18,7 @@ export type ProjectRecord = {
   addressEn: string | null;
   completionDate: Date | null;
   status: string;
+  units: number;
   featured: boolean;
   coverMediaId: string | null;
   seoTitleAr: string | null;

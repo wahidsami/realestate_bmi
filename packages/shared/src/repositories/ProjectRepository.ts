@@ -19,6 +19,10 @@ const DEFAULT_PROJECTS: Project[] = [
       ar: 'حي سكني مغلق متميز يمتد على مساحة واسعة شمال العاصمة الرياض، يقدم فلل راقية بتصاميم مستوحاة من العمارة السلمانية العريقة.',
       en: 'A premium gated residential community sprawling in Northern Riyadh, presenting exquisite villas inspired by the timeless Salmani architectural heritage.'
     },
+    developer: {
+      ar: 'شركة بناء وإدارة',
+      en: 'Bina & Edarah'
+    },
     location: {
       ar: 'شمال الرياض، المملكة العربية السعودية',
       en: 'North Riyadh, Kingdom of Saudi Arabia'
@@ -36,7 +40,8 @@ const DEFAULT_PROJECTS: Project[] = [
       en: 'King Salman Road, Al-Malqa, Riyadh'
     },
     completionDate: '2027-12-31',
-    status: 'under-construction',
+    units: 120,
+    status: 'available',
     googleMapsLink: 'https://maps.google.com/?q=24.8123,46.6123',
     latitude: 24.8123,
     longitude: 46.6123,
@@ -68,6 +73,10 @@ const DEFAULT_PROJECTS: Project[] = [
       ar: 'أبراج سكنية ذكية تطل على ساحل البحر الأحمر بجدة تنفرد بتقديم معايير رفاهية غير مسبوقة وخدمات فندقية متكاملة.',
       en: 'Smart residential towers overlooking the Red Sea coast in Jeddah, uniquely offering unprecedented luxury standards and integrated hotel-style services.'
     },
+    developer: {
+      ar: 'شركة بناء وإدارة',
+      en: 'Bina & Edarah'
+    },
     location: {
       ar: 'كورنيش جدة، جدة، المملكة العربية السعودية',
       en: 'Jeddah Corniche, Jeddah, Kingdom of Saudi Arabia'
@@ -85,7 +94,8 @@ const DEFAULT_PROJECTS: Project[] = [
       en: 'Corniche Road, Al-Shati, Jeddah'
     },
     completionDate: '2026-09-30',
-    status: 'available',
+    units: 86,
+    status: 'sold',
     googleMapsLink: 'https://maps.google.com/?q=21.5833,39.1111',
     latitude: 21.5833,
     longitude: 39.1111,
@@ -115,7 +125,10 @@ const normalizeProject = (project: Project): Project => ({
   ...project,
   galleryImageIds: Array.isArray(project.galleryImageIds) ? project.galleryImageIds : [],
   customAmenities: Array.isArray(project.customAmenities) ? project.customAmenities : [],
-  status: project.status || 'available',
+  units: Number.isFinite(Number(project.units)) ? Number(project.units) : 0,
+  status: project.status === 'sold' || project.status === 'sold-out' || project.status === 'under-construction'
+    ? project.status
+    : 'available',
   featured: Boolean(project.featured),
 });
 

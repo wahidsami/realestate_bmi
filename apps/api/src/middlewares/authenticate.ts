@@ -57,6 +57,49 @@ export const authenticate: RequestHandler = async (req, _res, next) => {
   }
 };
 
+export const optionalAuthenticate: RequestHandler = async (req, _res, next) => {
+  const header = req.headers.authorization;
+  const token = header?.startsWith('Bearer ') ? header.slice('Bearer '.length) : undefined;
+
+  if (!token) {
+    next();
+    return;
+  }
+
+  try {
+    const payload = verifyJwt(token);
+    if (payload.type !== 'access') {
+      next();
+      return;
+    }
+
+    const user = await authRepository.findUserById(payload.sub);
+    if (!user || !user.isActive || user.deletedAt) {
+      next();
+      return;
+    }
+
+    req.auth = {
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      fullName: user.fullName,
+      isActive: user.isActive,
+      isEmailVerified: user.isEmailVerified,
+      isPhoneVerified: user.isPhoneVerified,
+      roles: (user.roles || []).map((userRole: any) => ({
+        id: userRole.role.id,
+        name: userRole.role.name,
+        permissions: (userRole.role.permissions || []).map((item: any) => ({ key: item.permission.key })),
+      })),
+    };
+  } catch {
+    // Ignore invalid tokens for public reads.
+  }
+
+  next();
+};
+
 export const authorize = (...requiredPermissions: string[]): RequestHandler => {
   return (req, _res, next) => {
     const permissions = new Set<string>();

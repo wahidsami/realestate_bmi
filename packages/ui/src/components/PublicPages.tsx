@@ -134,6 +134,26 @@ export const PublicPages: React.FC<PublicPagesProps> = ({ activePage, onNavigate
     }
   ];
 
+  const normalizeProjectStatus = (status?: string) => {
+    const value = String(status || '').toLowerCase();
+    if (value === 'sold' || value === 'sold-out' || value === 'under-construction') return value;
+    return 'available';
+  };
+
+  const getProjectStatusLabel = (status?: string) => {
+    const normalized = normalizeProjectStatus(status);
+    if (normalized === 'sold') {
+      return language === 'ar' ? 'مباع بالكامل' : 'Sold';
+    }
+    if (normalized === 'sold-out') {
+      return language === 'ar' ? 'مباع بالكامل' : 'Sold Out';
+    }
+    if (normalized === 'under-construction') {
+      return language === 'ar' ? 'تحت الإنشاء' : 'Under Construction';
+    }
+    return language === 'ar' ? 'متاح للطلب' : 'Available';
+  };
+
   const slidesToRender = settings?.heroSlides && settings.heroSlides.length > 0 
     ? settings.heroSlides 
     : defaultSlides;
@@ -292,29 +312,6 @@ export const PublicPages: React.FC<PublicPagesProps> = ({ activePage, onNavigate
           if (onNavigate) onNavigate('properties');
         }}
       />
-    );
-  }
-
-  const projectTemplate = visualPages.find(p => p.slug === 'project-template' && p.status === 'published');
-  if (activePage === 'projects' && selectedProject && projectTemplate) {
-    return (
-      <div id="pub-page-project-details-template" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-        {/* Back navigation */}
-        <div className="flex justify-start">
-          <button 
-            onClick={() => {
-              setSelectedProject(null);
-              document.title = language === 'ar' ? "بناء وإدارة" : "BINA Portal";
-            }}
-            className="flex items-center gap-2 px-5 py-2.5 border border-neutral-200 hover:border-neutral-400 bg-white hover:bg-neutral-50 rounded-xl text-xs font-bold text-neutral-700 transition-all cursor-pointer shadow-sm"
-          >
-            <ArrowRight className="w-4 h-4" />
-            <span>{language === 'ar' ? 'العودة لقائمة المشاريع الكبرى' : 'Back to Megaprojects'}</span>
-          </button>
-        </div>
-        {/* Render using the dynamic template builder */}
-        <VisualPageRenderer page={projectTemplate} language={language} itemData={selectedProject} />
-      </div>
     );
   }
 
@@ -1084,15 +1081,16 @@ export const PublicPages: React.FC<PublicPagesProps> = ({ activePage, onNavigate
               <div className="h-[420px] w-full rounded-2xl bg-neutral-950 border border-neutral-200 overflow-hidden relative shadow-lg">
                 {renderItemImage(selectedProject.coverImageId, t(selectedProject.name))}
                 <span className="absolute top-4 right-4 text-xs font-black uppercase tracking-wider px-4 py-2 rounded-xl bg-black/85 text-white border border-white/10 shadow-md">
-                  {selectedProject.status === 'available' ? (language === 'ar' ? 'متاح للطلب' : 'Available') :
-                   selectedProject.status === 'under-construction' ? (language === 'ar' ? 'جاري التشييد' : 'Under Construction') :
-                   (language === 'ar' ? 'مباع بالكامل' : 'Sold Out')}
+                  {getProjectStatusLabel(selectedProject.status)}
                 </span>
                 {selectedProject.featured && (
                   <span className="absolute top-4 left-4 text-xs font-black px-4 py-2 rounded-xl bg-amber-500 text-slate-950 border border-amber-600 shadow-md">
                     👑 {language === 'ar' ? 'مشروع فريد ومميز' : 'Featured Masterpiece'}
                   </span>
                 )}
+                <span className="absolute bottom-4 right-4 text-xs font-black uppercase tracking-wider px-4 py-2 rounded-xl bg-white/90 text-neutral-900 border border-white/40 shadow-md">
+                  {language === 'ar' ? `${selectedProject.units || connectedProps.length} وحدة` : `${selectedProject.units || connectedProps.length} Units`}
+                </span>
               </div>
 
               {/* Title & Description Card */}
@@ -1116,6 +1114,40 @@ export const PublicPages: React.FC<PublicPagesProps> = ({ activePage, onNavigate
                 <p className="text-neutral-600 text-sm leading-relaxed whitespace-pre-wrap pt-3 font-semibold">
                   {t(selectedProject.description) || (language === 'ar' ? 'لا يوجد محتوى شرح بروشور متوفر حالياً للمشروع السكني.' : 'No descriptive content has been provided for this community yet.')}
                 </p>
+
+                {selectedProject.developer && (
+                  <div className="flex flex-wrap items-center gap-2 pt-2 text-xs">
+                    <span className="text-neutral-400 font-bold">{language === 'ar' ? 'المطور' : 'Developer'}</span>
+                    <span className="px-3 py-1.5 rounded-lg bg-neutral-100 text-neutral-800 font-bold">
+                      {t(selectedProject.developer)}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-white border border-neutral-200 rounded-2xl p-5 md:p-6 shadow-sm">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center text-xs">
+                  <div className="space-y-1">
+                    <Layers className="w-5 h-5 mx-auto text-amber-600" />
+                    <span className="text-[10px] text-neutral-500 font-bold block">{language === 'ar' ? 'عدد الوحدات' : 'Units'}</span>
+                    <span className="font-black text-neutral-900 block">{selectedProject.units || connectedProps.length}</span>
+                  </div>
+                  <div className="space-y-1 border-x border-neutral-100">
+                    <Calendar className="w-5 h-5 mx-auto text-amber-600" />
+                    <span className="text-[10px] text-neutral-500 font-bold block">{language === 'ar' ? 'تاريخ التسليم' : 'Completion'}</span>
+                    <span className="font-black text-neutral-900 block">{selectedProject.completionDate || '---'}</span>
+                  </div>
+                  <div className="space-y-1">
+                    <MapPin className="w-5 h-5 mx-auto text-amber-600" />
+                    <span className="text-[10px] text-neutral-500 font-bold block">{language === 'ar' ? 'المدينة' : 'City'}</span>
+                    <span className="font-black text-neutral-900 block">{t(selectedProject.city) || '---'}</span>
+                  </div>
+                  <div className="space-y-1 border-l border-neutral-100">
+                    <Sparkles className="w-5 h-5 mx-auto text-amber-600" />
+                    <span className="text-[10px] text-neutral-500 font-bold block">{language === 'ar' ? 'الحالة' : 'Status'}</span>
+                    <span className="font-black text-neutral-900 block">{getProjectStatusLabel(selectedProject.status)}</span>
+                  </div>
+                </div>
               </div>
 
               {/* MP4 Video Segment */}
@@ -1178,17 +1210,13 @@ export const PublicPages: React.FC<PublicPagesProps> = ({ activePage, onNavigate
                   </div>
                   <hr className="border-neutral-100" />
                   <div className="flex justify-between items-center">
-                    <span className="text-neutral-400 font-bold">{language === 'ar' ? 'الوحدات المكتملة الفعالة' : 'Listed Components'}</span>
-                    <span className="font-bold text-neutral-800">{connectedProps.length} {language === 'ar' ? 'وحدة عقارية' : 'Units Listed'}</span>
+                    <span className="text-neutral-400 font-bold">{language === 'ar' ? 'عدد الوحدات' : 'Units'}</span>
+                    <span className="font-bold text-neutral-800">{selectedProject.units || connectedProps.length} {language === 'ar' ? 'وحدة' : 'Units'}</span>
                   </div>
                   <hr className="border-neutral-100" />
                   <div className="flex justify-between items-center">
                     <span className="text-neutral-400 font-bold">{language === 'ar' ? 'الحالة الحالية' : 'Operational status'}</span>
-                    <span className="font-bold text-neutral-800">
-                      {selectedProject.status === 'available' ? (language === 'ar' ? 'متاح وبيك' : 'Available') :
-                       selectedProject.status === 'under-construction' ? (language === 'ar' ? 'تحت التشييد' : 'Under Construction') :
-                       (language === 'ar' ? 'مباع' : 'Sold Out')}
-                    </span>
+                    <span className="font-bold text-neutral-800">{getProjectStatusLabel(selectedProject.status)}</span>
                   </div>
                 </div>
 
@@ -1433,9 +1461,10 @@ export const PublicPages: React.FC<PublicPagesProps> = ({ activePage, onNavigate
                   <div className="h-72 relative bg-neutral-950 overflow-hidden">
                     {renderItemImage(proj.coverImageId, t(proj.name))}
                     <span className="absolute top-4 right-4 text-[10px] uppercase font-black tracking-wider px-3.5 py-1.5 rounded-lg bg-black/80 text-white shadow-sm">
-                      {proj.status === 'available' ? (language === 'ar' ? 'متاح للطلب' : 'Available') :
-                       proj.status === 'under-construction' ? (language === 'ar' ? 'تحت التشييد' : 'Under Construction') :
-                       (language === 'ar' ? 'مباع بالكامل' : 'Sold Out')}
+                      {getProjectStatusLabel(proj.status)}
+                    </span>
+                    <span className="absolute bottom-4 right-4 text-[10px] uppercase font-black tracking-wider px-3.5 py-1.5 rounded-lg bg-white/90 text-neutral-900 shadow-sm border border-white/40">
+                      {language === 'ar' ? `${proj.units || connectedProps.length} وحدة` : `${proj.units || connectedProps.length} Units`}
                     </span>
                     {proj.featured && (
                       <span className="absolute top-4 left-4 text-[9px] font-black tracking-widest px-2.5 py-1 rounded bg-amber-500 text-[#0F172A] shadow-md uppercase">
@@ -1451,7 +1480,27 @@ export const PublicPages: React.FC<PublicPagesProps> = ({ activePage, onNavigate
                         <span className="font-bold">{t(proj.city)} • {t(proj.district)}</span>
                       </div>
                       <h2 className="font-sans font-extrabold text-xl text-neutral-900 hover:text-[#B45309] transition-colors">{t(proj.name)}</h2>
+                      {proj.developer && (
+                        <p className="text-[11px] text-neutral-500 font-bold">
+                          {language === 'ar' ? 'المطور:' : 'Developer:'} {t(proj.developer)}
+                        </p>
+                      )}
                       <p className="text-neutral-500 text-xs leading-relaxed line-clamp-3">{t(proj.description)}</p>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 text-center text-[10px] bg-neutral-50 rounded-xl border border-neutral-100 p-3">
+                      <div>
+                        <div className="text-neutral-400 font-bold">{language === 'ar' ? 'الوحدات' : 'Units'}</div>
+                        <div className="font-black text-neutral-900">{proj.units || connectedProps.length}</div>
+                      </div>
+                      <div>
+                        <div className="text-neutral-400 font-bold">{language === 'ar' ? 'التسليم' : 'Delivery'}</div>
+                        <div className="font-black text-neutral-900">{proj.completionDate || '---'}</div>
+                      </div>
+                      <div>
+                        <div className="text-neutral-400 font-bold">{language === 'ar' ? 'الحالة' : 'Status'}</div>
+                        <div className="font-black text-neutral-900">{getProjectStatusLabel(proj.status)}</div>
+                      </div>
                     </div>
 
                     <div className="flex items-center justify-between border-t border-neutral-100 pt-5 mt-4">

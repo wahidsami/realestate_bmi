@@ -259,6 +259,27 @@ const DEFAULT_VISUAL_PAGES: VisualPage[] = [
                       color: '#ffffff',
                     },
                   }),
+                  normalizeWidget({
+                    id: 'w_pj_tpl_2',
+                    type: 'text',
+                    settings: {
+                      textAr: 'المطور: {{developer}} | الوحدات: {{units}} | الحالة: {{status}} | {{description}}',
+                      textEn: 'Developer: {{developer}} | Units: {{units}} | Status: {{status}} | {{description}}',
+                      align: 'center',
+                      color: 'rgba(255,255,255,0.88)',
+                    },
+                  }),
+                  normalizeWidget({
+                    id: 'w_pj_tpl_3',
+                    type: 'button',
+                    settings: {
+                      textAr: 'تواصل حول هذا المشروع',
+                      textEn: 'Inquire About This Project',
+                      buttonLink: '/contact',
+                      align: 'center',
+                      color: '#d4af37',
+                    },
+                  }),
                 ],
               },
             ],

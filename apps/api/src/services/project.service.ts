@@ -32,6 +32,14 @@ const toNumberValue = (value: unknown, fallback?: number) => {
   return fallback;
 };
 
+const normalizeProjectStatus = (value: unknown): 'available' | 'sold' | 'under-construction' | 'sold-out' => {
+  const status = toStringValue(value, 'available').toLowerCase();
+  if (status === 'sold' || status === 'sold-out' || status === 'under-construction') {
+    return status as 'sold' | 'sold-out' | 'under-construction';
+  }
+  return 'available';
+};
+
 const toBilingualText = (value: unknown, fallback = { ar: '', en: '' }) => {
   if (isRecord(value)) {
     return {
@@ -90,6 +98,10 @@ const buildProjectWriteData = (payload: ProjectCreateDTO | ProjectUpdateDTO, rec
     ar: record?.descriptionAr || '',
     en: record?.descriptionEn || '',
   };
+  const currentDeveloper = {
+    ar: record?.developerAr || '',
+    en: record?.developerEn || '',
+  };
   const currentCity = {
     ar: record?.cityAr || '',
     en: record?.cityEn || '',
@@ -105,6 +117,7 @@ const buildProjectWriteData = (payload: ProjectCreateDTO | ProjectUpdateDTO, rec
 
   const name = toBilingualText(payload.name, currentName);
   const description = toBilingualText(payload.description, currentDescription);
+  const developer = toBilingualText(payload.developer, currentDeveloper);
   const city = toBilingualText(payload.city, currentCity);
   const district = toBilingualText(payload.district, currentDistrict);
   const address = toBilingualText(payload.address, currentAddress);
@@ -112,9 +125,11 @@ const buildProjectWriteData = (payload: ProjectCreateDTO | ProjectUpdateDTO, rec
 
   const metadata: Record<string, unknown> = { ...currentMetadata };
   setDefinedValue(metadata, 'location', payload.location ? location : currentMetadata.location);
+  setDefinedValue(metadata, 'developer', payload.developer ? developer : currentMetadata.developer);
   setDefinedValue(metadata, 'googleMapsLink', payload.googleMapsLink ?? currentMetadata.googleMapsLink);
   setDefinedValue(metadata, 'latitude', payload.latitude ?? currentMetadata.latitude);
   setDefinedValue(metadata, 'longitude', payload.longitude ?? currentMetadata.longitude);
+  setDefinedValue(metadata, 'units', payload.units ?? currentMetadata.units);
   setDefinedValue(metadata, 'coverImageId', payload.coverImageId ?? currentMetadata.coverImageId);
   setDefinedValue(metadata, 'galleryImageIds', payload.galleryImageIds ?? currentMetadata.galleryImageIds);
   setDefinedValue(metadata, 'brochurePdfId', payload.brochurePdfId ?? currentMetadata.brochurePdfId);
@@ -137,6 +152,8 @@ const buildProjectWriteData = (payload: ProjectCreateDTO | ProjectUpdateDTO, rec
       nameEn: name.en,
       descriptionAr: description.ar || null,
       descriptionEn: description.en || null,
+      developerAr: developer.ar || null,
+      developerEn: developer.en || null,
       cityAr: city.ar || null,
       cityEn: city.en || null,
       districtAr: district.ar || null,
@@ -144,7 +161,8 @@ const buildProjectWriteData = (payload: ProjectCreateDTO | ProjectUpdateDTO, rec
       addressAr: address.ar || null,
       addressEn: address.en || null,
       completionDate: payload.completionDate ? new Date(payload.completionDate) : record?.completionDate || null,
-      status: toStringValue(payload.status, record?.status || 'draft'),
+      status: normalizeProjectStatus(payload.status ?? record?.status),
+      units: toNumberValue(payload.units, record?.units ?? 0) ?? 0,
       featured: toBooleanValue(payload.featured, record?.featured || false),
       coverMediaId: toStringValue(payload.coverImageId, record?.coverMediaId || ''),
       seoTitleAr: toStringValue(payload.seoTitleAr, record?.seoTitleAr || '') || null,
@@ -172,6 +190,14 @@ const mapRecordToProject = (record: NonNullable<ProjectRecord>) => {
       ar: record.descriptionAr || '',
       en: record.descriptionEn || '',
     },
+    developer: record.developerAr || record.developerEn
+      ? {
+          ar: record.developerAr || '',
+          en: record.developerEn || '',
+        }
+      : (isRecord(metadata.developer)
+        ? toBilingualText(metadata.developer)
+        : undefined),
     location,
     city: {
       ar: record.cityAr || '',
@@ -186,7 +212,8 @@ const mapRecordToProject = (record: NonNullable<ProjectRecord>) => {
       en: record.addressEn || '',
     },
     completionDate: record.completionDate ? record.completionDate.toISOString().slice(0, 10) : '',
-    status: toStringValue(record.status, 'draft') as 'available' | 'under-construction' | 'sold-out',
+    status: normalizeProjectStatus(record.status),
+    units: toNumberValue(record.units, 0) ?? 0,
     googleMapsLink: toStringValue(metadata.googleMapsLink, ''),
     latitude: metadata.latitude !== undefined ? toNumberValue(metadata.latitude) : undefined,
     longitude: metadata.longitude !== undefined ? toNumberValue(metadata.longitude) : undefined,

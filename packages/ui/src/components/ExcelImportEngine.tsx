@@ -90,6 +90,22 @@ const TARGET_FIELDS: TargetField[] = [
     synonyms: ['project description', 'project desc', 'project description en', 'project desc en']
   },
   {
+    key: 'project.developer.ar',
+    labelAr: 'المطور (العربية)',
+    labelEn: 'Developer (Arabic)',
+    entity: 'project',
+    type: 'string',
+    synonyms: ['المطور', 'شركة التطوير', 'developer ar', 'project developer ar', 'developer arabic']
+  },
+  {
+    key: 'project.developer.en',
+    labelAr: 'المطور (الإنجليزية)',
+    labelEn: 'Developer (English)',
+    entity: 'project',
+    type: 'string',
+    synonyms: ['developer', 'developer en', 'project developer', 'project developer en', 'developer english']
+  },
+  {
     key: 'project.city.ar',
     labelAr: 'المدينة (العربية)',
     labelEn: 'City (Arabic)',
@@ -146,12 +162,20 @@ const TARGET_FIELDS: TargetField[] = [
     synonyms: ['تاريخ الانتهاء', 'تاريخ التسليم', 'تاريخ الاكتمال', 'تاريخ التدشين', 'completion date', 'completion_date', 'date of completion']
   },
   {
+    key: 'project.units',
+    labelAr: 'عدد الوحدات',
+    labelEn: 'Project Units',
+    entity: 'project',
+    type: 'number',
+    synonyms: ['عدد الوحدات', 'الوحدات', 'units', 'project units', 'unit count', 'project_units']
+  },
+  {
     key: 'project.status',
     labelAr: 'حالة المشروع',
     labelEn: 'Project Status',
     entity: 'project',
     type: 'enum',
-    enumOptions: ['available', 'under-construction', 'sold-out'],
+    enumOptions: ['available', 'under-construction', 'sold', 'sold-out'],
     synonyms: ['حالة المشروع', 'وضع المشروع', 'status project', 'project status', 'project_status']
   },
   {
@@ -392,6 +416,10 @@ const getTemplateExampleValue = (field: TargetField) => {
       return 'وصف مختصر للمشروع';
     case 'project.description.en':
       return 'Short project description';
+    case 'project.developer.ar':
+      return 'شركة بناء وإدارة';
+    case 'project.developer.en':
+      return 'Bina & Edarah';
     case 'project.city.ar':
       return 'الرياض';
     case 'project.city.en':
@@ -406,6 +434,8 @@ const getTemplateExampleValue = (field: TargetField) => {
       return 'King Salman Road';
     case 'project.completionDate':
       return '2026-12-31';
+    case 'project.units':
+      return '120';
     case 'project.status':
       return 'available';
     case 'project.featured':
@@ -477,6 +507,10 @@ const getTemplateHeaderLabel = (field: TargetField) => {
       return 'Project Description (Arabic)';
     case 'project.description.en':
       return 'Project Description (English)';
+    case 'project.developer.ar':
+      return 'Developer (Arabic)';
+    case 'project.developer.en':
+      return 'Developer (English)';
     case 'project.city.ar':
       return 'City (Arabic)';
     case 'project.city.en':
@@ -885,6 +919,11 @@ export function ExcelImportEngine({ language, onImportComplete }: ExcelImportEng
             en: String(mappedData['project.description.en'] || '')
           };
 
+          const developer: BilingualText = {
+            ar: String(mappedData['project.developer.ar'] || ''),
+            en: String(mappedData['project.developer.en'] || '')
+          };
+
           const city: BilingualText = {
             ar: String(mappedData['project.city.ar'] || ''),
             en: String(mappedData['project.city.en'] || '')
@@ -903,11 +942,13 @@ export function ExcelImportEngine({ language, onImportComplete }: ExcelImportEng
           pFields = {
             name,
             description,
+            developer,
             city,
             district,
             location,
             address: location,
             completionDate: String(mappedData['project.completionDate'] || ''),
+            units: Number(mappedData['project.units'] || 0),
             status: (mappedData['project.status'] as any) || 'available',
             featured: Boolean(mappedData['project.featured']),
             amenityParking: true,
@@ -1208,6 +1249,25 @@ export function ExcelImportEngine({ language, onImportComplete }: ExcelImportEng
       language === 'ar' ? 'قالب الاستيراد' : 'Import Template'
     );
 
+    if (kind !== 'property') {
+      const projectFieldsSheet = XLSX.utils.aoa_to_sheet([
+        [language === 'ar' ? 'حقول المشروع الأساسية' : 'Key Project Fields'],
+        [language === 'ar' ? 'هذه الأعمدة يجب أن تظهر في قالب المشاريع لتسهيل تعبئة البيانات.' : 'These columns are included in the project template to make data entry easier.'],
+        [],
+        [language === 'ar' ? 'الحقل' : 'Field', language === 'ar' ? 'الوصف' : 'Description', language === 'ar' ? 'مثال' : 'Example'],
+        [language === 'ar' ? 'عدد الوحدات' : 'Project Units', language === 'ar' ? 'إجمالي عدد الوحدات داخل المشروع' : 'Total number of units in the project', '120'],
+        [language === 'ar' ? 'المطور' : 'Developer', language === 'ar' ? 'اسم المطور أو شركة التطوير' : 'Developer or development company name', 'Bina & Edarah'],
+        [language === 'ar' ? 'حالة المشروع' : 'Project Status', language === 'ar' ? 'حالة المشروع الحالية' : 'Current project status', 'available'],
+        [language === 'ar' ? 'تاريخ اكتمال المشروع' : 'Project Completion Date', language === 'ar' ? 'تاريخ التسليم أو الاكتمال' : 'Expected or actual completion date', '2026-12-31'],
+      ]);
+      projectFieldsSheet['!cols'] = [{ wch: 24 }, { wch: 48 }, { wch: 24 }];
+      XLSX.utils.book_append_sheet(
+        workbook,
+        projectFieldsSheet,
+        language === 'ar' ? 'حقول_المشروع' : 'Project Fields'
+      );
+    }
+
     const instructions = XLSX.utils.aoa_to_sheet([
       [language === 'ar' ? 'تعليمات الاستخدام' : 'How to Use'],
       [language === 'ar' ? '1) اترك الصف الأول الخاص بالمجموعة والصف الثاني الخاص بالأعمدة كما هما.' : '1) Keep the first group row and the second header row unchanged.'],
@@ -1240,7 +1300,8 @@ export function ExcelImportEngine({ language, onImportComplete }: ExcelImportEng
       ['Field', 'Allowed values'],
       ['Property Type (Arabic)', PROPERTY_TYPE_PRESETS.map((preset) => preset.label.ar).join(' | ')],
       ['Property Type (English)', PROPERTY_TYPE_PRESETS.map((preset) => preset.label.en).join(' | ')],
-      ['Project Status', 'available | under-construction | sold-out'],
+      ['Project Units', '0 | 1 | 2 | 10 | 100'],
+      ['Project Status', 'available | under-construction | sold | sold-out'],
       ['Property Status', 'available | reserved | sold | rented'],
       ['Sale / Rent', 'sale | rent'],
       ['Yes / No', 'Yes | No'],
