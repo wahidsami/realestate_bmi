@@ -267,7 +267,7 @@ const TARGET_FIELDS: TargetField[] = [
     labelAr: 'السعر الكلي',
     labelEn: 'Offered Price',
     entity: 'property',
-    required: true,
+    required: false,
     type: 'number',
     synonyms: ['السعر', 'القيمة السوقية', 'القيمة', 'سعر العقار', 'سعر الكلي', 'سعر', 'price', 'unit price', 'cost', 'amount', 'property_price']
   },
@@ -284,7 +284,7 @@ const TARGET_FIELDS: TargetField[] = [
     labelAr: 'نوع العقار (العربية)',
     labelEn: 'Property Type (Arabic)',
     entity: 'property',
-    required: true,
+    required: false,
     type: 'string',
     synonyms: ['نوع العقار', 'النوع', 'تصنيف العقار', 'نوع الوحدة', 'property type ar', 'property_type_ar', 'type ar', 'category ar']
   },
@@ -293,7 +293,7 @@ const TARGET_FIELDS: TargetField[] = [
     labelAr: 'نوع العقار (الإنجليزية)',
     labelEn: 'Property Type (English)',
     entity: 'property',
-    required: true,
+    required: false,
     type: 'string',
     synonyms: ['property type', 'property type en', 'type en', 'property_type_en', 'type', 'category']
   },
@@ -318,7 +318,7 @@ const TARGET_FIELDS: TargetField[] = [
     labelAr: 'المساحة الإجمالية بالمتر المربع',
     labelEn: 'Area (Sqm)',
     entity: 'property',
-    required: true,
+    required: false,
     type: 'number',
     synonyms: ['المساحة', 'مساحة العقار', 'المتر المربع', 'المساحة م٢', 'مساحة بالمتر', 'مساحه', 'area', 'sqm', 'area sqm', 'area_sqm', 'size sqm', 'size_sqm', 'square meters']
   },
