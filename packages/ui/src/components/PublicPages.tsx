@@ -22,6 +22,7 @@ import { PropertyDetailsPageContent } from './PropertyDetailsPageContent';
 import { Property, Project, PageContent, Inquiry, MediaItem, HeroSlide } from '@bina/types';
 import { NajdiVillaVector, PenthouseVector, SmartApartmentVector, ArchitecturalPlanSVG } from './VectorGraphics';
 import { readStorageItem, removeStorageItem } from '@bina/utils';
+import { displayBilingualOrNA, displayCurrencyOrNA, displayNumberOrNA } from '@bina/shared';
 import { 
   Compass, 
   Award, 
@@ -594,30 +595,30 @@ export const PublicPages: React.FC<PublicPagesProps> = ({ activePage, onNavigate
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-1.5 text-neutral-400 text-xs justify-start">
                       <MapPin className="w-3.5 h-3.5 shrink-0" />
-                      <span>{t(prop.location)}</span>
+                      <span>{displayBilingualOrNA(prop.location, language)}</span>
                     </div>
-                    <h3 className="font-sans font-bold text-lg text-neutral-900 line-clamp-1">{t(prop.title)}</h3>
+                    <h3 className="font-sans font-bold text-lg text-neutral-900 line-clamp-1">{displayBilingualOrNA(prop.title, language)}</h3>
                   </div>
 
                   <div className="grid grid-cols-3 gap-1 bg-neutral-50 p-2.5 rounded-xl text-[11px] text-neutral-600 font-semibold text-center">
                     <div className="flex flex-col items-center justify-center p-1">
                       <span className="text-slate-400 text-[9px] mb-0.5">{staticT('areaSQM') || 'AREA'}</span>
-                      <span className="text-neutral-800 font-mono">{prop.areaSqm}</span>
+                      <span className="text-neutral-800 font-mono">{displayNumberOrNA(prop.areaSqm)}</span>
                     </div>
                     <div className="flex flex-col items-center justify-center border-x border-neutral-200/60 p-1">
                       <span className="text-slate-400 text-[9px] mb-0.5">{staticT('bathrooms') || 'BATHS'}</span>
-                      <span className="text-neutral-800 font-mono">{prop.bathrooms}</span>
+                      <span className="text-neutral-800 font-mono">{displayNumberOrNA(prop.bathrooms)}</span>
                     </div>
                     <div className="flex flex-col items-center justify-center p-1">
                       <span className="text-slate-400 text-[9px] mb-0.5">{staticT('bedrooms') || 'BEDS'}</span>
-                      <span className="text-neutral-800 font-mono">{prop.bedrooms}</span>
+                      <span className="text-neutral-800 font-mono">{displayNumberOrNA(prop.bedrooms)}</span>
                     </div>
                   </div>
 
                   <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
                     <span className="text-xs text-neutral-400">{staticT('sar')}</span>
                     <span className="font-sans font-black text-lg text-(--color-primary)" style={{ color: theme.primary }}>
-                      {prop.price.toLocaleString(language === 'ar' ? 'ar-SA' : 'en-US')}
+                      {displayCurrencyOrNA(prop.price, language)}
                     </span>
                   </div>
                 </div>
@@ -953,7 +954,7 @@ export const PublicPages: React.FC<PublicPagesProps> = ({ activePage, onNavigate
                   <div className="pt-2 border-t border-neutral-100 flex items-center justify-between">
                     <span className="text-xs text-neutral-400">{staticT('sar')}</span>
                     <span className="font-sans font-extrabold text-lg text-neutral-900">
-                      {prop.price.toLocaleString(language === 'ar' ? 'ar-SA' : 'en-US')}
+                      {displayCurrencyOrNA(prop.price, language)}
                     </span>
                   </div>
                 </div>
@@ -1000,15 +1001,15 @@ export const PublicPages: React.FC<PublicPagesProps> = ({ activePage, onNavigate
                 <div className="grid grid-cols-3 gap-4 bg-neutral-50 p-4 rounded text-sm text-neutral-700 text-center">
                   <div className="space-y-1">
                     <span className="text-xs text-neutral-400 block">{staticT('bedrooms')}</span>
-                    <span className="font-bold block">{selectedProperty.bedrooms}</span>
+                    <span className="font-bold block">{displayNumberOrNA(selectedProperty.bedrooms)}</span>
                   </div>
                   <div className="space-y-1">
                     <span className="text-xs text-neutral-400 block">{staticT('bathrooms')}</span>
-                    <span className="font-bold block">{selectedProperty.bathrooms}</span>
+                    <span className="font-bold block">{displayNumberOrNA(selectedProperty.bathrooms)}</span>
                   </div>
                   <div className="space-y-1 font-sans">
                     <span className="text-xs text-neutral-400 block">{staticT('area')}</span>
-                    <span className="font-bold block">{selectedProperty.areaSqm} {staticT('sqm')}</span>
+                    <span className="font-bold block">{displayNumberOrNA(selectedProperty.areaSqm)} {staticT('sqm')}</span>
                   </div>
                 </div>
 
@@ -1021,7 +1022,7 @@ export const PublicPages: React.FC<PublicPagesProps> = ({ activePage, onNavigate
                   <div>
                     <span className="text-xs text-neutral-400">{staticT('sar')}</span>
                     <div className="font-sans font-extrabold text-2xl text-(--color-primary)" style={{ color: theme.primary }}>
-                      {selectedProperty.price.toLocaleString(language === 'ar' ? 'ar-SA' : 'en-US')}
+                      {displayCurrencyOrNA(selectedProperty.price, language)}
                     </div>
                   </div>
                   <button 
@@ -1424,8 +1425,8 @@ export const PublicPages: React.FC<PublicPagesProps> = ({ activePage, onNavigate
                       </div>
                       <hr className="border-neutral-100" />
                       <div className="flex justify-between items-center text-xs font-sans">
-                        <span className="text-neutral-500 font-semibold">{prop.bedrooms} Bed | {prop.bathrooms} Bath | {prop.areaSqm} m²</span>
-                        <span className="font-black text-neutral-900 text-sm">{prop.price.toLocaleString()} SAR</span>
+                        <span className="text-neutral-500 font-semibold">{displayNumberOrNA(prop.bedrooms)} Bed | {displayNumberOrNA(prop.bathrooms)} Bath | {displayNumberOrNA(prop.areaSqm)} m²</span>
+                        <span className="font-black text-neutral-900 text-sm">{displayCurrencyOrNA(prop.price, language)}</span>
                       </div>
                     </div>
                   </div>

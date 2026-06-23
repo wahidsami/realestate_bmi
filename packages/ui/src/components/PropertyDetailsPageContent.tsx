@@ -56,6 +56,7 @@ import {
 } from '@bina/shared';
 import { NajdiVillaVector, PenthouseVector, SmartApartmentVector, ArchitecturalPlanSVG } from './VectorGraphics';
 import { readStorageItem, writeStorageItem, removeStorageItem } from '@bina/utils';
+import { displayBilingualOrNA, displayCurrencyOrNA, displayNumberOrNA, displayTextOrNA } from '@bina/shared';
 
 interface PropertyDetailsPageContentProps {
   property: Property;
@@ -98,9 +99,9 @@ export const PropertyDetailsPageContent: React.FC<PropertyDetailsPageContentProp
 
   // Translate helpers
   const t = (obj: any) => {
-    if (!obj) return '';
-    if (typeof obj === 'string') return obj;
-    return isAr ? obj.ar || obj.en : obj.en || obj.ar;
+    if (!obj) return 'N/A';
+    if (typeof obj === 'string') return displayTextOrNA(obj);
+    return displayBilingualOrNA(obj, language);
   };
 
   const getFarsiSarla = (val: string) => {
@@ -733,7 +734,7 @@ export const PropertyDetailsPageContent: React.FC<PropertyDetailsPageContentProp
                     <span className="text-[10px] text-neutral-400 block font-bold uppercase tracking-widest">{isAr ? 'القيمة المطلوبة للتملك' : 'LISTING PRICE'}</span>
                     <div className="flex items-baseline gap-1 justify-end">
                       <span className="font-sans font-extrabold text-3xl text-slate-950">
-                        {property.price.toLocaleString(isAr ? 'ar-SA' : 'en-US')}
+                        {displayCurrencyOrNA(property.price, language)}
                       </span>
                       <span className="text-xs font-black text-amber-600">{property.currency || (isAr ? 'ريال' : 'SAR')}</span>
                     </div>
@@ -806,37 +807,37 @@ export const PropertyDetailsPageContent: React.FC<PropertyDetailsPageContentProp
                 <div className="bg-neutral-50/70 p-3.5 rounded-xl border border-neutral-150 text-center space-y-1">
                   <Bed className="w-5 h-5 mx-auto text-amber-700" />
                   <span className="text-[11px] text-neutral-400 block">{isAr ? 'غرف نوم فسيحة' : 'Bedrooms'}</span>
-                  <span className="font-sans font-extrabold text-sm text-neutral-800">{property.bedrooms}</span>
+                      <span className="font-sans font-extrabold text-sm text-neutral-800">{displayNumberOrNA(property.bedrooms)}</span>
                 </div>
                 <div className="bg-neutral-50/70 p-3.5 rounded-xl border border-neutral-150 text-center space-y-1">
                   <Bath className="w-5 h-5 mx-auto text-amber-700" />
                   <span className="text-[11px] text-neutral-400 block">{isAr ? 'دورات المياه' : 'Bathrooms'}</span>
-                  <span className="font-sans font-extrabold text-sm text-neutral-800">{property.bathrooms}</span>
+                      <span className="font-sans font-extrabold text-sm text-neutral-800">{displayNumberOrNA(property.bathrooms)}</span>
                 </div>
                 {property.livingRooms && property.livingRooms > 0 ? (
                   <div className="bg-neutral-50/70 p-3.5 rounded-xl border border-neutral-150 text-center space-y-1">
                     <DoorOpen className="w-5 h-5 mx-auto text-amber-700" />
                     <span className="text-[11px] text-neutral-400 block">{isAr ? 'المجالس والصالات' : 'Living Rooms'}</span>
-                    <span className="font-sans font-extrabold text-sm text-neutral-800">{property.livingRooms}</span>
+                    <span className="font-sans font-extrabold text-sm text-neutral-800">{displayNumberOrNA(property.livingRooms)}</span>
                   </div>
                 ) : null}
                 <div className="bg-neutral-50/70 p-3.5 rounded-xl border border-neutral-150 text-center space-y-1">
                   <Maximize2 className="w-5 h-5 mx-auto text-amber-700" />
                   <span className="text-[11px] text-neutral-400 block">{isAr ? 'مسطح البناء' : 'Built-up Area'}</span>
-                  <span className="font-sans font-extrabold text-sm text-neutral-900">{property.areaSqm} {isAr ? 'م٢' : 'm²'}</span>
+                  <span className="font-sans font-extrabold text-sm text-neutral-900">{displayNumberOrNA(property.areaSqm)} {isAr ? 'م٢' : 'm²'}</span>
                 </div>
                 {property.balconies && property.balconies > 0 ? (
                   <div className="bg-neutral-50/70 p-3.5 rounded-xl border border-neutral-150 text-center space-y-1">
                     <Compass className="w-5 h-5 mx-auto text-amber-700" />
                     <span className="text-[11px] text-neutral-400 block">{isAr ? 'شرفات وبلكونة' : 'Balconies'}</span>
-                    <span className="font-sans font-extrabold text-sm text-neutral-800">{property.balconies}</span>
+                    <span className="font-sans font-extrabold text-sm text-neutral-800">{displayNumberOrNA(property.balconies)}</span>
                   </div>
                 ) : null}
                 {property.parkingSpaces && property.parkingSpaces > 0 ? (
                   <div className="bg-neutral-50/70 p-3.5 rounded-xl border border-neutral-150 text-center space-y-1">
                     <Car className="w-5 h-5 mx-auto text-amber-700" />
                     <span className="text-[11px] text-neutral-400 block">{isAr ? 'مواقف مخصصة' : 'Parking Spaces'}</span>
-                    <span className="font-sans font-extrabold text-sm text-neutral-800">{property.parkingSpaces}</span>
+                    <span className="font-sans font-extrabold text-sm text-neutral-800">{displayNumberOrNA(property.parkingSpaces)}</span>
                   </div>
                 ) : null}
                 {property.floorNumber !== undefined ? (
@@ -844,7 +845,7 @@ export const PropertyDetailsPageContent: React.FC<PropertyDetailsPageContentProp
                     <Layers className="w-5 h-5 mx-auto text-amber-700" />
                     <span className="text-[11px] text-neutral-400 block">{isAr ? 'رقم الطابق' : 'Floor Level'}</span>
                     <span className="font-sans font-extrabold text-sm text-neutral-850">
-                      {property.floorNumber === 0 ? (isAr ? 'أرضي' : 'Ground') : `${property.floorNumber}`}
+                      {property.floorNumber === 0 ? (isAr ? 'أرضي' : 'Ground') : displayNumberOrNA(property.floorNumber)}
                     </span>
                   </div>
                 ) : null}
@@ -853,7 +854,7 @@ export const PropertyDetailsPageContent: React.FC<PropertyDetailsPageContentProp
                     <Calendar className="w-5 h-5 mx-auto text-amber-700" />
                     <span className="text-[11px] text-neutral-400 block">{isAr ? 'عمر العقار' : 'Property Age'}</span>
                     <span className="font-sans font-extrabold text-sm text-neutral-800">
-                      {property.propertyAge === 0 ? (isAr ? 'جديد (صفر)' : 'Brand New') : `${property.propertyAge} ${isAr ? 'سنة' : 'yrs'}`}
+                      {property.propertyAge === 0 ? (isAr ? 'جديد (صفر)' : 'Brand New') : `${displayNumberOrNA(property.propertyAge)} ${isAr ? 'سنة' : 'yrs'}`}
                     </span>
                   </div>
                 ) : null}
@@ -961,7 +962,7 @@ export const PropertyDetailsPageContent: React.FC<PropertyDetailsPageContentProp
                   {property.developer && (
                     <div className="flex justify-between py-1 border-b border-dotted border-neutral-200">
                       <span className="text-neutral-400 font-bold block">{isAr ? 'المطور الإنشائي' : 'Corporate Developer'}</span>
-                      <span className="font-bold text-neutral-800">{t(property.developer)}</span>
+                      <span className="font-bold text-neutral-800">{displayBilingualOrNA(property.developer, language)}</span>
                     </div>
                   )}
                   {property.listingDate && (
@@ -1423,32 +1424,32 @@ export const PropertyDetailsPageContent: React.FC<PropertyDetailsPageContentProp
                     </tr>
                     <tr>
                       <td className="p-3.5 text-neutral-450 font-bold">{isAr ? 'المساحة الصافية للإفراغ' : 'Net Area Sqm'}</td>
-                      <td className="p-3.5 font-mono">{property.areaSqm} {isAr ? 'متر مربع' : 'sqm'}</td>
+                      <td className="p-3.5 font-mono">{displayNumberOrNA(property.areaSqm)} {isAr ? 'متر مربع' : 'sqm'}</td>
                     </tr>
                     <tr>
                       <td className="p-3.5 text-neutral-450 font-bold">{isAr ? 'مستودع النوم' : 'Bedrooms count'}</td>
-                      <td className="p-3.5">{property.bedrooms} {isAr ? 'غرف نوم رئيسية' : 'Rooms'}</td>
+                      <td className="p-3.5">{displayNumberOrNA(property.bedrooms)} {isAr ? 'غرف نوم رئيسية' : 'Rooms'}</td>
                     </tr>
                     <tr>
                       <td className="p-3.5 text-neutral-450 font-bold">{isAr ? 'المراحيض المتاحة' : 'Bathrooms'}</td>
-                      <td className="p-3.5">{property.bathrooms} {isAr ? 'دورات مياه فندقية' : 'Baths'}</td>
+                      <td className="p-3.5">{displayNumberOrNA(property.bathrooms)} {isAr ? 'دورات مياه فندقية' : 'Baths'}</td>
                     </tr>
                     {property.floorNumber !== undefined && (
                       <tr>
                         <td className="p-3.5 text-neutral-450 font-bold">{isAr ? 'الدور والارتفاع' : 'Floor level'}</td>
-                        <td className="p-3.5">{property.floorNumber === 0 ? (isAr ? 'أرضي مبسط' : 'Ground') : `${property.floorNumber}`}</td>
+                        <td className="p-3.5">{property.floorNumber === 0 ? (isAr ? 'أرضي مبسط' : 'Ground') : displayNumberOrNA(property.floorNumber)}</td>
                       </tr>
                     )}
                     {property.propertyAge !== undefined && (
                       <tr>
                         <td className="p-3.5 text-neutral-450 font-bold">{isAr ? 'تاريخ التشييد (بناء)' : 'Operational age'}</td>
-                        <td className="p-3.5">{property.propertyAge === 0 ? (isAr ? 'حديث الانتهاء' : 'New') : `${property.propertyAge} ${isAr ? 'سنة بنائية' : 'years'}`}</td>
+                        <td className="p-3.5">{property.propertyAge === 0 ? (isAr ? 'حديث الانتهاء' : 'New') : `${displayNumberOrNA(property.propertyAge)} ${isAr ? 'سنة بنائية' : 'years'}`}</td>
                       </tr>
                     )}
                     {property.developer && (
                       <tr>
                         <td className="p-3.5 text-neutral-450 font-bold">{isAr ? 'المطور الإنشائي الحصري' : 'Registered Developer'}</td>
-                        <td className="p-3.5">{t(property.developer)}</td>
+                        <td className="p-3.5">{displayBilingualOrNA(property.developer, language)}</td>
                       </tr>
                     )}
                   </tbody>
@@ -1499,14 +1500,14 @@ export const PropertyDetailsPageContent: React.FC<PropertyDetailsPageContentProp
                           </div>
                         )}
                         <span className="absolute top-3 right-3 text-[9px] uppercase font-bold px-2 py-0.5 rounded bg-black/75 text-white">
-                          {t(rProp.type)}
+                          {displayBilingualOrNA(rProp.type, language)}
                         </span>
                       </div>
 
                       <div className="p-4 space-y-3.5">
                         <div className="space-y-1">
-                          <span className="text-[9.5px] font-bold text-amber-700 block">{t(rProp.location)}</span>
-                          <h4 className="font-sans font-bold text-sm text-neutral-900 group-hover:text-amber-705 leading-relaxed truncate">{t(rProp.title)}</h4>
+                          <span className="text-[9.5px] font-bold text-amber-700 block">{displayBilingualOrNA(rProp.location, language)}</span>
+                          <h4 className="font-sans font-bold text-sm text-neutral-900 group-hover:text-amber-705 leading-relaxed truncate">{displayBilingualOrNA(rProp.title, language)}</h4>
                         </div>
                         
                         <div className="flex justify-between items-center bg-neutral-50 p-2 text-[10px] text-neutral-500 rounded font-sans">
@@ -1517,7 +1518,7 @@ export const PropertyDetailsPageContent: React.FC<PropertyDetailsPageContentProp
 
                         <div className="flex justify-between items-center text-xs pt-1 border-t border-neutral-50">
                           <span className="text-[10px] text-neutral-400 font-bold">{isAr ? 'التثمين' : 'Price'}</span>
-                          <span className="font-black text-slate-905">{rProp.price.toLocaleString()} {isAr ? 'ريال' : 'SAR'}</span>
+                          <span className="font-black text-slate-905">{displayCurrencyOrNA(rProp.price, language)}</span>
                         </div>
                       </div>
                     </div>

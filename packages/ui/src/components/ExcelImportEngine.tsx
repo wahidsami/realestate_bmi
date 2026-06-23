@@ -995,28 +995,32 @@ export function ExcelImportEngine({ language, onImportComplete }: ExcelImportEng
         const hasGalleryImageInput = Array.isArray(mappedData['property.galleryImageIds']) && mappedData['property.galleryImageIds'].length > 0;
         const hasVideoUploadInput = mappedData['property.videoUploadId'] !== undefined;
 
-        const hasPropertyInput = propertyTitleAr || propertyTitleEn || propertyPrice !== undefined;
+        const hasPropertyInput = Boolean(
+          propertyTitleAr ||
+          propertyTitleEn ||
+          propertyPrice !== undefined ||
+          propertyArea !== undefined ||
+          propertyTypeAr ||
+          propertyTypeEn ||
+          unitNum ||
+          propertyGoogleMapsLink ||
+          propertyLocationAr ||
+          propertyLocationEn ||
+          propertyAddressAr ||
+          propertyAddressEn
+        );
         let prFields: Partial<Property> = {};
 
         if (hasPropertyInput) {
-          // Property title is required
-          if (!propertyTitleAr && !propertyTitleEn) {
-            errors.push(translate("عنوان العقار مفقود.", "Property title is required."));
-          }
-          if (propertyPrice === undefined || isNaN(propertyPrice)) {
-            errors.push(translate("القيمة المالية مفقودة أو غير صالحة.", "Price value is missing or invalid."));
-          }
-          if (propertyArea === undefined || isNaN(propertyArea)) {
-            errors.push(translate("المساحة الإجمالية مفقودة أو غير صالحة.", "Area Sqm is missing or invalid."));
-          }
-          if (!propertyTypeAr && !propertyTypeEn) {
-            errors.push(translate("نوع العقار مفقود (شقة، فيلا، إلخ).", "Property Type is required (Apartment, Villa, etc)."));
-          }
+          const resolvedTitleAr = String(propertyTitleAr || unitNum || mappedData['project.name.ar'] || mappedData['project.name.en'] || 'عقار');
+          const resolvedTitleEn = String(propertyTitleEn || unitNum || mappedData['project.name.en'] || mappedData['project.name.ar'] || 'Property');
+          const resolvedTypeAr = String(propertyTypeAr || 'عقار');
+          const resolvedTypeEn = String(propertyTypeEn || 'Property');
 
           // Check if Property already exists inside the system
           // Match criteria: matching title, or matching Unit Number inside the matched Project
-          let matchPropTitleAr = String(propertyTitleAr || '').toLowerCase();
-          let matchPropTitleEn = String(propertyTitleEn || '').toLowerCase();
+          let matchPropTitleAr = String(propertyTitleAr || unitNum || '').toLowerCase();
+          let matchPropTitleEn = String(propertyTitleEn || unitNum || '').toLowerCase();
 
           const existingProp = systemProperties.find(p => {
             const sysAr = String(p.title?.ar || '').toLowerCase();
@@ -1038,8 +1042,8 @@ export function ExcelImportEngine({ language, onImportComplete }: ExcelImportEng
 
           prFields = {
             title: {
-              ar: String(propertyTitleAr || propertyTitleEn || ''),
-              en: String(propertyTitleEn || propertyTitleAr || '')
+              ar: resolvedTitleAr,
+              en: resolvedTitleEn
             },
             description: {
               ar: String(mappedData['property.description.ar'] || ''),
@@ -1059,8 +1063,8 @@ export function ExcelImportEngine({ language, onImportComplete }: ExcelImportEng
             areaSqm: Number(propertyArea || 0),
             status: (mappedData['property.status'] as any) || 'available',
             type: {
-              ar: String(propertyTypeAr || propertyTypeEn || ''),
-              en: String(propertyTypeEn || propertyTypeAr || '')
+              ar: resolvedTypeAr,
+              en: resolvedTypeEn
             },
             googleMapsLink: String(propertyGoogleMapsLink || ''),
             unitNumber: unitNum ? String(unitNum) : undefined,

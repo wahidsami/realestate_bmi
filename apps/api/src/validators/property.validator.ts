@@ -100,31 +100,7 @@ const propertyBaseSchema = z
   })
   .strip();
 
-const requirePropertyCreateField = (value: unknown, path: string[], message: string, issues: Array<{ path: string[]; message: string }>) => {
-  if (value === undefined || value === null) {
-    issues.push({ path, message });
-  }
-};
-
-const createPropertyCreateSchema = () =>
-  propertyBaseSchema.superRefine((value, ctx) => {
-    const issues: Array<{ path: string[]; message: string }> = [];
-    requirePropertyCreateField(value.title, ['title'], 'Property title is required', issues);
-    requirePropertyCreateField(value.description, ['description'], 'Property description is required', issues);
-    requirePropertyCreateField(value.price, ['price'], 'Property price is required', issues);
-    requirePropertyCreateField(value.areaSqm, ['areaSqm'], 'Property area is required', issues);
-    requirePropertyCreateField(value.status, ['status'], 'Property status is required', issues);
-
-    for (const issue of issues) {
-      ctx.addIssue({
-        code: 'custom',
-        message: issue.message,
-        path: issue.path,
-      });
-    }
-  });
-
-export const propertyCreateSchema = createPropertyCreateSchema();
+export const propertyCreateSchema = propertyBaseSchema;
 export const propertyUpdateSchema = propertyBaseSchema;
 
 export type PropertyCreateDTO = z.infer<typeof propertyCreateSchema>;

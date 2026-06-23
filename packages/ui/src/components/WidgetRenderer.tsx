@@ -8,6 +8,7 @@ import {
   Users2, Briefcase, ChevronLeft, ChevronRight, Send, Mail, MapPin, Check
 } from 'lucide-react';
 import { VisualWidget } from '../types';
+import { displayBilingualOrNA, displayCurrencyOrNA, displayNumberOrNA } from '@bina/shared';
 import { EffectsWrapper, ShapeDivider } from './EffectsWrapper';
 import { getIconComponent } from './AmenitiesSection';
 import { FullWidthHeroSliderWidget } from './FullWidthHeroSliderWidget';
@@ -202,9 +203,9 @@ export const WidgetRenderer: React.FC<WidgetRendererProps> = ({ widget, language
     let text = val;
 
     const getBilingualVal = (field: any) => {
-      if (!field) return '';
+      if (!field) return 'N/A';
       if (typeof field === 'string') return field;
-      return field[language] || field.en || field.ar || '';
+      return displayBilingualOrNA(field, language);
     };
 
     // Construct the placeholder values matches the requirements
@@ -213,18 +214,18 @@ export const WidgetRenderer: React.FC<WidgetRendererProps> = ({ widget, language
       '{{name}}': getBilingualVal(itemData.name || itemData.title),
       '{{description}}': getBilingualVal(itemData.description),
       '{{developer}}': getBilingualVal(itemData.developer),
-      '{{price}}': typeof itemData.price === 'number' ? itemData.price.toLocaleString(language === 'ar' ? 'ar-SA' : 'en-US') + ' SAR' : '',
+      '{{price}}': displayCurrencyOrNA(itemData.price, language),
       '{{location}}': getBilingualVal(itemData.location),
       '{{city}}': getBilingualVal(itemData.city),
       '{{district}}': getBilingualVal(itemData.district),
       '{{address}}': getBilingualVal(itemData.address),
-      '{{completion_date}}': itemData.completionDate || '',
-      '{{units}}': String(itemData.units || ''),
-      '{{bedrooms}}': String(itemData.bedrooms || ''),
-      '{{bathrooms}}': String(itemData.bathrooms || ''),
-      '{{area}}': String(itemData.areaSqm || ''),
+      '{{completion_date}}': itemData.completionDate || 'N/A',
+      '{{units}}': displayNumberOrNA(itemData.units),
+      '{{bedrooms}}': displayNumberOrNA(itemData.bedrooms),
+      '{{bathrooms}}': displayNumberOrNA(itemData.bathrooms),
+      '{{area}}': displayNumberOrNA(itemData.areaSqm),
       '{{type}}': getBilingualVal(itemData.type),
-      '{{status}}': itemData.status || '',
+      '{{status}}': itemData.status || 'N/A',
     };
 
     Object.entries(placeholders).forEach(([placeholder, value]) => {
@@ -235,7 +236,7 @@ export const WidgetRenderer: React.FC<WidgetRendererProps> = ({ widget, language
   };
 
   const t = (ar: string | undefined, en: string | undefined) => {
-    const raw = language === 'ar' ? ar || en || '' : en || ar || '';
+    const raw = language === 'ar' ? ar || en || 'N/A' : en || ar || 'N/A';
     return resolvePlaceholders(raw);
   };
 

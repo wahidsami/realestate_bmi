@@ -6,6 +6,9 @@ import {
   apiClient,
   propertyRepository,
   PLACEHOLDER_PROPERTY_FEATURED_MEDIA_ID,
+  displayBilingualOrNA,
+  displayCurrencyOrNA,
+  displayNumberOrNA,
 } from '@bina/shared';
 import type { Property } from '@bina/types';
 
@@ -188,14 +191,14 @@ export const FeaturedPropertiesGridWidget: React.FC<FeaturedPropertiesGridWidget
                         <span className="truncate">{language === 'ar' ? property.location.ar : property.location.en}</span>
                       </div>
                       <h3 className="text-xl font-black leading-tight line-clamp-2">
-                        {language === 'ar' ? property.title.ar : property.title.en}
+                      {displayBilingualOrNA(property.title, language)}
                       </h3>
                     </div>
                   </div>
 
                   <div className="p-5 space-y-4 flex-1 flex flex-col bg-white/95">
                     <p className="text-sm text-slate-500 leading-relaxed line-clamp-3">
-                      {language === 'ar' ? property.description.ar : property.description.en}
+                      {displayBilingualOrNA(property.description, language)}
                     </p>
 
                     <p className="text-[11px] text-slate-400 leading-relaxed line-clamp-2">
@@ -208,15 +211,15 @@ export const FeaturedPropertiesGridWidget: React.FC<FeaturedPropertiesGridWidget
                       <div className="grid grid-cols-3 gap-2 rounded-xl bg-slate-50 dark:bg-slate-950/60 p-3 text-center">
                         <div className="space-y-1">
                           <BedDouble className="w-4 h-4 mx-auto text-[#D4AF37]" />
-                          <div className="text-[10px] text-slate-500 font-bold">{property.bedrooms || 0}</div>
+                        <div className="text-[10px] text-slate-500 font-bold">{displayNumberOrNA(property.bedrooms)}</div>
                         </div>
                         <div className="space-y-1 border-x border-slate-200 dark:border-slate-800">
                           <Bath className="w-4 h-4 mx-auto text-[#D4AF37]" />
-                          <div className="text-[10px] text-slate-500 font-bold">{property.bathrooms || 0}</div>
+                        <div className="text-[10px] text-slate-500 font-bold">{displayNumberOrNA(property.bathrooms)}</div>
                         </div>
                         <div className="space-y-1">
                           <SquareIcon className="w-4 h-4 mx-auto text-[#D4AF37]" />
-                          <div className="text-[10px] text-slate-500 font-bold">{property.areaSqm || 0} m²</div>
+                          <div className="text-[10px] text-slate-500 font-bold">{displayNumberOrNA(property.areaSqm)} m²</div>
                         </div>
                       </div>
                     )}
@@ -227,7 +230,7 @@ export const FeaturedPropertiesGridWidget: React.FC<FeaturedPropertiesGridWidget
                           {property.currency || 'SAR'}
                         </span>
                         <span className="text-lg font-black text-[#D4AF37]">
-                          {Number(property.price || 0).toLocaleString(language === 'ar' ? 'ar-SA' : 'en-US')}
+                          {displayCurrencyOrNA(property.price, language)}
                         </span>
                       </div>
                     )}
