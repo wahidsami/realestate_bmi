@@ -4030,34 +4030,34 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToWebsite }) => {
 
         {activeTab === 'inquiries' && (
           <div id="admin-tab-inquiries-body" className="space-y-6">
-            <div className="bg-slate-950 border border-slate-800 rounded-lg p-6">
-              <h3 className="font-sans font-bold text-lg text-slate-200 mb-2">معالجة طلبات الملاك والعملاء المستكشفين</h3>
-              <p className="text-slate-450 text-xs leading-relaxed">
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+              <h3 className="font-sans font-bold text-lg text-slate-900 mb-2">معالجة طلبات الملاك والعملاء المستكشفين</h3>
+              <p className="text-slate-600 text-xs leading-relaxed">
                 مستودع طلبات التواصل متصل بشكل استباقي ومباشر بـ `InquiryRepository`. يمكنك إدارة حالة الطلب (من حالة "جديد" إلى "تم الاتصال" أو "محلول") أو حذف السجلات في بيئة العرض المؤقت للتجربة.
               </p>
             </div>
 
             {inquiries.length === 0 ? (
-              <div className="text-center py-20 text-slate-500 font-medium">لا توجد طلبات ملاك جارية حتى الآن.</div>
+              <div className="text-center py-20 text-slate-500 font-medium bg-white border border-slate-200 rounded-2xl shadow-sm">لا توجد طلبات ملاك جارية حتى الآن.</div>
             ) : (
               <div className="grid grid-cols-1 gap-6">
                 {inquiries.map((inq) => (
-                  <div key={inq.id} className="p-6 rounded bg-slate-950 border border-slate-800 flex flex-col md:flex-row justify-between text-right gap-6">
+                  <div key={inq.id} className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between text-right gap-6">
                     <div className="space-y-3 flex-1">
                       <div className="flex flex-wrap items-center gap-3">
-                        <span className="text-white font-extrabold text-base">{inq.fullName}</span>
-                        <span className="text-[11px] font-mono text-slate-400 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">{inq.phone}</span>
-                        <span className="text-[11px] font-mono text-slate-400 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">{inq.email}</span>
+                        <span className="text-slate-900 font-extrabold text-base">{inq.fullName}</span>
+                        <span className="text-[11px] font-mono text-slate-600 px-2 py-0.5 rounded bg-slate-50 border border-slate-200">{inq.phone}</span>
+                        <span className="text-[11px] font-mono text-slate-600 px-2 py-0.5 rounded bg-slate-50 border border-slate-200">{inq.email}</span>
                       </div>
-                      <p className="text-slate-350 text-xs leading-relaxed bg-slate-900 p-4 rounded border border-slate-800/60 font-medium">{inq.message}</p>
+                      <p className="text-slate-700 text-xs leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-200 font-medium">{inq.message}</p>
                     </div>
 
                     <div className="flex flex-row md:flex-col items-end justify-between md:justify-center gap-4">
                       {/* State badge indicator */}
                       <span className={`px-3 py-1 rounded text-[10px] uppercase font-bold border ${
-                        inq.status === 'new' ? 'bg-rose-500/10 text-rose-300 border-rose-500/30' :
-                        inq.status === 'contacted' ? 'bg-amber-500/10 text-amber-300 border-amber-500/30' :
-                        'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                        inq.status === 'new' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                        inq.status === 'contacted' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                        'bg-emerald-50 text-emerald-700 border-emerald-200'
                       }`}>
                         {language === 'ar' ? (
                           inq.status === 'new' ? 'طلب جديد' :

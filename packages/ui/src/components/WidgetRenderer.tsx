@@ -8,6 +8,7 @@ import {
   Users2, Briefcase, ChevronLeft, ChevronRight, Send, Mail, MapPin, Check
 } from 'lucide-react';
 import { VisualWidget } from '../types';
+import { inquiryRepository } from '@bina/shared';
 import { displayBilingualOrNA, displayCurrencyOrNA, displayNumberOrNA } from '@bina/shared';
 import { EffectsWrapper, ShapeDivider } from './EffectsWrapper';
 import { getIconComponent } from './AmenitiesSection';
@@ -252,6 +253,7 @@ export const WidgetRenderer: React.FC<WidgetRendererProps> = ({ widget, language
   const [openAccordions, setOpenAccordions] = useState<Record<number, boolean>>({});
   const [openFaqs, setOpenFaqs] = useState<Record<number, boolean>>({});
   const [contactSubmitted, setContactSubmitted] = useState(false);
+  const [contactError, setContactError] = useState<string | null>(null);
   const [newsletterSubmitted, setNewsletterSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -270,6 +272,157 @@ export const WidgetRenderer: React.FC<WidgetRendererProps> = ({ widget, language
     setOpenFaqs(prev => ({ ...prev, [idx]: !prev[idx] }));
   };
 
+  const renderContactWidget = (showcase = false) => {
+    const labelColor = settings.labelColor || '#f8fafc';
+    const inputTextColor = settings.inputTextColor || '#e2e8f0';
+    const inputBgColor = settings.inputBgColor || '#020617';
+    const inputBorderColor = settings.inputBorderColor || '#1e293b';
+    const buttonBgColor = settings.buttonBgColor || '#d4af37';
+    const buttonTextColor = settings.buttonTextColor || '#020617';
+    const accentColor = settings.accentColor || '#d4af37';
+
+    const fieldStyle: React.CSSProperties = {
+      color: inputTextColor,
+      backgroundColor: inputBgColor,
+      borderColor: inputBorderColor,
+    };
+
+    const placeholderClass = 'placeholder:text-slate-500';
+    const sectionTitle = t(settings.headlineAr || settings.buttonTextAr, settings.headlineEn || settings.buttonTextEn);
+    const sectionSubtitle = t(settings.subheadlineAr, settings.subheadlineEn);
+    const nameLabel = t(settings.nameLabelAr, settings.nameLabelEn);
+    const phoneLabel = t(settings.phoneLabelAr, settings.phoneLabelEn);
+    const emailLabel = t(settings.emailLabelAr, settings.emailLabelEn);
+    const messageLabel = t(settings.messageLabelAr, settings.messageLabelEn);
+    const namePlaceholder = t(settings.placeholderNameAr, settings.placeholderNameEn);
+    const phonePlaceholder = t(settings.placeholderPhoneAr, settings.placeholderPhoneEn);
+    const emailPlaceholder = t(settings.placeholderEmailAr, settings.placeholderEmailEn);
+    const messagePlaceholder = t(settings.placeholderMessageAr, settings.placeholderMessageEn);
+    const submitText = loading ? t(settings.submittingTextAr, settings.submittingTextEn) : t(settings.buttonTextAr, settings.buttonTextEn);
+    const statsAr = Array.isArray(settings.statsAr) ? settings.statsAr : ['استجابة سريعة', 'دعم ثنائي اللغة', 'استشارة مبدئية'];
+    const statsEn = Array.isArray(settings.statsEn) ? settings.statsEn : ['Fast response', 'Bilingual support', 'Initial consultation'];
+
+    const contactForm = (
+      <form onSubmit={handleContactSubmit} className="space-y-3.5">
+        <div className="space-y-1">
+          <label className="block text-[11px] font-bold" style={{ color: labelColor }}>{nameLabel}</label>
+          <input
+            type="text"
+            name="fullName"
+            required
+            placeholder={namePlaceholder}
+            className={`w-full text-xs p-2.5 border rounded-lg text-right focus:outline-none focus:border-[#d4af37] ${placeholderClass}`}
+            style={fieldStyle}
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="block text-[11px] font-bold" style={{ color: labelColor }}>{phoneLabel}</label>
+          <input
+            type="tel"
+            name="phone"
+            required
+            placeholder={phonePlaceholder}
+            className={`w-full text-xs p-2.5 border rounded-lg text-right focus:outline-none focus:border-[#d4af37] font-mono ${placeholderClass}`}
+            style={fieldStyle}
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="block text-[11px] font-bold" style={{ color: labelColor }}>{emailLabel}</label>
+          <input
+            type="email"
+            name="email"
+            required
+            placeholder={emailPlaceholder}
+            className={`w-full text-xs p-2.5 border rounded-lg text-right focus:outline-none focus:border-[#d4af37] ${placeholderClass}`}
+            style={fieldStyle}
+          />
+        </div>
+        {showcase && (
+          <div className="space-y-1">
+            <label className="block text-[11px] font-bold" style={{ color: labelColor }}>{messageLabel}</label>
+            <textarea
+              rows={4}
+              name="message"
+              placeholder={messagePlaceholder}
+              className={`w-full text-xs p-2.5 border rounded-lg text-right focus:outline-none focus:border-[#d4af37] ${placeholderClass}`}
+              style={fieldStyle}
+            />
+          </div>
+        )}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full py-2.5 font-black text-xs rounded-lg uppercase cursor-pointer hover:opacity-95 transition-opacity disabled:opacity-50"
+          style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
+        >
+          {submitText}
+        </button>
+      </form>
+    );
+
+    if (!showcase) {
+      return (
+        <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-right relative shadow-xl">
+          {contactSubmitted ? (
+            <div className="text-center py-6 space-y-3">
+              <span className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-xl">✓</span>
+              <h4 className="text-xs font-black text-slate-950 dark:text-white">
+                {language === 'ar' ? 'تم استلام طلب الاستشارة السكنية!' : 'Your Consultation Request Received!'}
+              </h4>
+              <p className="text-[10px] text-slate-500">
+                {language === 'ar' ? 'سيقوم وكيل المبيعات الحصري بالتواصل معك عبر الهاتف خلال ساعة.' : 'Our prestigious sales advisor will connect via phone within an hour.'}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <h4 className="text-xs font-black text-slate-950 dark:text-white">{sectionTitle}</h4>
+              {sectionSubtitle && <p className="text-[11px] text-slate-500 leading-relaxed">{sectionSubtitle}</p>}
+              {contactForm}
+              {contactError && <p className="text-[11px] font-semibold text-rose-500">{contactError}</p>}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    const stats = language === 'ar' ? statsAr : statsEn;
+    return (
+      <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-5 shadow-2xl shadow-slate-950/30 text-right overflow-hidden">
+        {contactSubmitted ? (
+          <div className="text-center py-10 space-y-3">
+            <span className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-2xl">✓</span>
+            <h4 className="text-sm font-black text-white">{language === 'ar' ? 'تم استلام طلبك بنجاح' : 'Your request was received'}</h4>
+            <p className="text-xs text-slate-300">{sectionSubtitle || (language === 'ar' ? 'سيتواصل معك فريقنا قريباً.' : 'Our team will contact you shortly.')}</p>
+          </div>
+        ) : (
+          <div className="grid gap-4 lg:grid-cols-[1fr_0.95fr] items-start">
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black border" style={{ color: accentColor, borderColor: `${accentColor}40`, backgroundColor: `${accentColor}12` }}>
+                {language === 'ar' ? 'اتصال النخبة' : 'Elite Contact'}
+              </div>
+              <div className="space-y-2">
+                <h4 className="text-xl md:text-2xl font-black text-white leading-tight">{sectionTitle}</h4>
+                {sectionSubtitle && <p className="text-sm text-slate-300 leading-relaxed">{sectionSubtitle}</p>}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {stats.slice(0, 3).map((item: string, index: number) => (
+                  <div key={index} className="rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-center">
+                    <div className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">{language === 'ar' ? 'ميزة' : 'Feature'}</div>
+                    <div className="text-sm font-black text-white mt-1">{item}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
+              {contactForm}
+              {contactError && <p className="mt-3 text-[11px] font-semibold text-rose-300">{contactError}</p>}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Carousel timer effect
   useEffect(() => {
     if (widget.type === 'carousel' && settings.images && settings.autoplay) {
@@ -281,13 +434,40 @@ export const WidgetRenderer: React.FC<WidgetRendererProps> = ({ widget, language
   }, [widget.type, settings.images, settings.autoplay, settings.delay]);
 
   // Form handlers
-  const handleContactSubmit = (e: React.FormEvent) => {
+  const handleContactSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const fullName = String(formData.get('fullName') || '').trim();
+    const email = String(formData.get('email') || '').trim();
+    const phone = String(formData.get('phone') || '').trim();
+    const fallbackMessage = t(settings.headlineAr || settings.buttonTextAr, settings.headlineEn || settings.buttonTextEn);
+    const message = String(formData.get('message') || fallbackMessage || '').trim();
+
+    if (!fullName || !phone || !email) {
+      setContactError(language === 'ar' ? 'يرجى تعبئة الاسم والبريد الإلكتروني ورقم الهاتف.' : 'Please fill in name, email, and phone.');
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    setContactError(null);
+
+    try {
+      await inquiryRepository.createInquiry({
+        fullName,
+        email,
+        phone,
+        message: message || (language === 'ar' ? 'طلب تواصل من نموذج الموقع' : 'Website contact form submission'),
+        status: 'new',
+      });
+      form.reset();
       setContactSubmitted(true);
-    }, 1200);
+    } catch (error) {
+      console.error('[ContactWidget] Failed to submit inquiry', error);
+      setContactError(language === 'ar' ? 'تعذر إرسال الطلب حالياً. حاول مرة أخرى.' : 'Unable to send the request right now. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
@@ -1022,56 +1202,10 @@ export const WidgetRenderer: React.FC<WidgetRendererProps> = ({ widget, language
 
       // ================= CONTACT CATEGORY =================
       case 'contact_form':
-        return (
-          <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-right relative shadow-xl">
-            {contactSubmitted ? (
-              <div className="text-center py-6 space-y-3">
-                <span className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-xl">✓</span>
-                <h4 className="text-xs font-black text-slate-950 dark:text-white">
-                  {language === 'ar' ? 'تم استلام طلب الاستشارة السكنية!' : 'Your Consultation Request Received!'}
-                </h4>
-                <p className="text-[10px] text-slate-500">
-                  {language === 'ar' ? 'سيقوم وكيل المبيعات الحصري بالتواصل معك عبر الهاتف خلال ساعة.' : 'Our prestigious sales advisor will connect via phone within an hour.'}
-                </p>
-              </div>
-            ) : (
-              <form onSubmit={handleContactSubmit} className="space-y-3.5">
-                <h4 className="text-xs font-black text-slate-950 dark:text-white">{t(settings.buttonTextAr, settings.buttonTextEn)}</h4>
-                <div className="space-y-1">
-                  <input
-                    type="text"
-                    required
-                    placeholder={t(settings.placeholderNameAr, settings.placeholderNameEn)}
-                    className="w-full text-xs p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-right focus:outline-none focus:border-[#d4af37]"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <input
-                    type="tel"
-                    required
-                    placeholder={language === 'ar' ? 'رقم الجوال الخاص بك' : 'Your Contact Phone Number'}
-                    className="w-full text-xs p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-right focus:outline-none focus:border-[#d4af37] font-mono"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <input
-                    type="email"
-                    required
-                    placeholder={language === 'ar' ? 'عنوان بريدك الإلكتروني المفضل' : 'Your Secure Business Email'}
-                    className="w-full text-xs p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-right focus:outline-none focus:border-[#d4af37]"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-2.5 bg-[#d4af37] text-slate-950 font-black text-xs rounded-lg uppercase cursor-pointer hover:opacity-95 transition-opacity disabled:opacity-50"
-                >
-                  {loading ? t(settings.submittingTextAr, settings.submittingTextEn) : t(settings.buttonTextAr, settings.buttonTextEn)}
-                </button>
-              </form>
-            )}
-          </div>
-        );
+        return renderContactWidget(false);
+
+      case 'contact_showcase':
+        return renderContactWidget(true);
 
       case 'newsletter':
         return (
