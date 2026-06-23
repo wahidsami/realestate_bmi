@@ -32,6 +32,49 @@ const toNumberValue = (value: unknown, fallback?: number) => {
   return fallback;
 };
 
+const excelSerialToDate = (serial: number) => {
+  const excelEpoch = Date.UTC(1899, 11, 30);
+  return new Date(excelEpoch + serial * 24 * 60 * 60 * 1000);
+};
+
+const parseProjectCompletionDate = (value: unknown, fallback?: Date | null) => {
+  if (value === undefined || value === null) return fallback ?? null;
+
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value;
+  }
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    if (value > 1000) {
+      const converted = excelSerialToDate(value);
+      return Number.isNaN(converted.getTime()) ? fallback ?? null : converted;
+    }
+    return fallback ?? null;
+  }
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed || ['n/a', 'na', 'null', 'undefined', '-', 'لايوجد'].includes(trimmed.toLowerCase())) {
+      return fallback ?? null;
+    }
+
+    if (/^\d+(\.\d+)?$/.test(trimmed)) {
+      const serial = Number(trimmed);
+      if (Number.isFinite(serial) && serial > 1000) {
+        const converted = excelSerialToDate(serial);
+        return Number.isNaN(converted.getTime()) ? fallback ?? null : converted;
+      }
+    }
+
+    const parsed = new Date(trimmed);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+
+  return fallback ?? null;
+};
+
 const normalizeProjectStatus = (value: unknown): 'available' | 'sold' | 'under-construction' | 'sold-out' => {
   const status = toStringValue(value, 'available').toLowerCase();
   if (status === 'sold' || status === 'sold-out' || status === 'under-construction') {
@@ -160,7 +203,7 @@ const buildProjectWriteData = (payload: ProjectCreateDTO | ProjectUpdateDTO, rec
       districtEn: district.en || null,
       addressAr: address.ar || null,
       addressEn: address.en || null,
-      completionDate: payload.completionDate ? new Date(payload.completionDate) : record?.completionDate || null,
+      completionDate: parseProjectCompletionDate(payload.completionDate, record?.completionDate || null),
       status: normalizeProjectStatus(payload.status ?? record?.status),
       unitCount: toNumberValue(payload.units, record?.unitCount ?? 0) ?? 0,
       featured: toBooleanValue(payload.featured, record?.featured || false),
