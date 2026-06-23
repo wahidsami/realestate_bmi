@@ -301,7 +301,7 @@ model Project {
   addressEn        String?
   completionDate   DateTime?
   status           String   @default("available")
-  units            Int      @default(0)
+  unitCount        Int      @default(0)
   featured         Boolean  @default(false)
   coverMediaId     String?
   seoTitleAr       String?

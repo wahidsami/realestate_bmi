@@ -18,7 +18,7 @@ export type ProjectRecord = {
   addressEn: string | null;
   completionDate: Date | null;
   status: string;
-  units: number;
+  unitCount: number;
   featured: boolean;
   coverMediaId: string | null;
   seoTitleAr: string | null;
