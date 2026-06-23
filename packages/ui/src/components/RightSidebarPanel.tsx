@@ -113,7 +113,7 @@ export const RightSidebarPanel: React.FC<RightSidebarPanelProps> = ({
   const t = (ar: string, en: string) => (language === 'ar' ? ar : en);
 
   const [settingsSearchQuery, setSettingsSearchQuery] = useState('');
-  const [propertiesActiveSubTab, setPropertiesActiveSubTab] = useState<'all' | 'settings' | 'typography' | 'colors' | 'effects'>('all');
+  const [propertiesActiveSubTab, setPropertiesActiveSubTab] = useState<'all' | 'settings' | 'text' | 'typography' | 'colors' | 'effects'>('all');
   const [widgetActiveCategory, setWidgetActiveCategory] = useState<'ALL' | 'TEXT' | 'BUTTONS' | 'MEDIA' | 'BUSINESS' | 'CONTACT'>('ALL');
   const [libraryActiveSubTab, setLibraryActiveSubTab] = useState<'sections' | 'pages' | 'custom'>('sections');
   const [designSystemActiveSubTab, setDesignSystemActiveSubTab] = useState<'preset' | 'colors' | 'fonts' | 'elements' | 'custom'>('preset');
@@ -406,6 +406,7 @@ export const RightSidebarPanel: React.FC<RightSidebarPanelProps> = ({
             {[
               { key: 'all', arName: 'الكل', enName: 'All' },
               { key: 'settings', arName: 'عام', enName: 'General' },
+              { key: 'text', arName: 'نصوص', enName: 'Text' },
               { key: 'typography', arName: 'خطوط', enName: 'Fonts' },
               { key: 'colors', arName: 'ألوان', enName: 'Colors' },
               { key: 'effects', arName: 'مؤثرات', enName: 'FX' },
@@ -423,6 +424,12 @@ export const RightSidebarPanel: React.FC<RightSidebarPanelProps> = ({
                       setIsColorsExpanded(true);
                       setIsEffectsExpanded(true);
                     } else if (subTab.key === 'settings') {
+                      setIsGeneralExpanded(true);
+                      if (!isPageTreePinned) setIsPageTreeExpanded(false);
+                      setIsTypographyExpanded(false);
+                      setIsColorsExpanded(false);
+                      setIsEffectsExpanded(false);
+                    } else if (subTab.key === 'text') {
                       setIsGeneralExpanded(true);
                       if (!isPageTreePinned) setIsPageTreeExpanded(false);
                       setIsTypographyExpanded(false);
@@ -865,41 +872,17 @@ export const RightSidebarPanel: React.FC<RightSidebarPanelProps> = ({
                     {/* Selected Widget detailed settings */}
                     {selectedWidgetId && selectedElType === 'widget' && currentWidget && (
                       <div className="space-y-3 font-sans">
-                        <div className="p-2 bg-slate-900 border border-slate-850 rounded-lg flex items-center justify-between">
-                          <span className="font-bold text-xs text-gradient bg-gradient-to-r from-teal-400 to-[#D4AF37] bg-clip-text text-transparent">
-                            {currentWidget.type.split('_').join(' ')}
-                          </span>
-                          <span className="text-[9px] text-slate-500 font-mono select-all">ID: {currentWidget.id.slice(0, 8)}</span>
-                        </div>
+                        {(() => {
+                          const widgetSchemaEntries = Object.entries((WIDGET_REGISTRY as any)[currentWidget.type]?.settingsSchema || {});
+                          const textFields = widgetSchemaEntries.filter(([, schemaVal]: [string, any]) => schemaVal.type === 'string' || schemaVal.type === 'text');
+                          const nonTextFields = widgetSchemaEntries.filter(([, schemaVal]: [string, any]) => schemaVal.type !== 'string' && schemaVal.type !== 'text');
 
-                        <WidgetBackgroundSettingsEditor
-                          currentWidget={currentWidget}
-                          handleUpdateElementSetting={handleUpdateElementSetting}
-                          language={language}
-                        />
-
-                        {/* Dynamically render fields inside schema with search filter query */}
-                        {currentWidget.type === 'hero_slider' || currentWidget.type === 'property_grid' ? (
-                          currentWidget.type === 'property_grid' ? (
-                            <FeaturedPropertiesGridSettingsEditor
-                              currentWidget={currentWidget}
-                              handleUpdateElementSetting={handleUpdateElementSetting}
-                              language={language}
-                            />
-                          ) : (
-                          <HeroSliderSettingsEditor
-                            currentWidget={currentWidget}
-                            handleUpdateElementSetting={handleUpdateElementSetting}
-                            language={language}
-                          />
-                          )
-                        ) : (
-                          Object.entries((WIDGET_REGISTRY as any)[currentWidget.type]?.settingsSchema || {}).map(([key, schemaVal]: [string, any]) => {
+                          const renderField = ([key, schemaVal]: [string, any]) => {
                             const showField = matchesSearch(schemaVal.labelAr || schemaVal.labelEn || key, key);
                             if (!showField) return null;
 
                             const val = currentWidget.settings[key] ?? schemaVal.default;
-                            
+
                             if (schemaVal.type === 'string') {
                               return (
                                 <div key={key} className="space-y-1.5">
@@ -924,6 +907,28 @@ export const RightSidebarPanel: React.FC<RightSidebarPanelProps> = ({
                                     onChange={(e) => handleUpdateElementSetting(key, e.target.value, true)}
                                     className="w-full bg-slate-900 border border-slate-800 text-slate-200 px-2.5 py-1.5 rounded-lg focus:outline-none focus:border-[#D4AF37] font-sans text-xs text-right leading-normal"
                                   />
+                                </div>
+                              );
+                            }
+
+                            if (schemaVal.type === 'color') {
+                              return (
+                                <div key={key} className="space-y-1.5">
+                                  <label className="text-[10px] text-slate-400 font-bold block">{language === 'ar' ? schemaVal.labelAr : schemaVal.labelEn}</label>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="color"
+                                      value={String(val || '#000000')}
+                                      onChange={(e) => handleUpdateElementSetting(key, e.target.value, true)}
+                                      className="w-10 h-9 rounded-lg border border-slate-800 bg-slate-900 p-1 cursor-pointer"
+                                    />
+                                    <input
+                                      type="text"
+                                      value={String(val || '')}
+                                      onChange={(e) => handleUpdateElementSetting(key, e.target.value, true)}
+                                      className="flex-1 bg-slate-900 border border-slate-800 text-slate-200 px-2.5 py-1.5 rounded-lg focus:outline-none focus:border-[#D4AF37]"
+                                    />
+                                  </div>
                                 </div>
                               );
                             }
@@ -974,8 +979,45 @@ export const RightSidebarPanel: React.FC<RightSidebarPanelProps> = ({
                             }
 
                             return null;
-                          })
+                          };
+                        return (
+                        <>
+                        <div className="p-2 bg-slate-900 border border-slate-850 rounded-lg flex items-center justify-between">
+                          <span className="font-bold text-xs text-gradient bg-gradient-to-r from-teal-400 to-[#D4AF37] bg-clip-text text-transparent">
+                            {currentWidget.type.split('_').join(' ')}
+                          </span>
+                          <span className="text-[9px] text-slate-500 font-mono select-all">ID: {currentWidget.id.slice(0, 8)}</span>
+                        </div>
+
+                        <WidgetBackgroundSettingsEditor
+                          currentWidget={currentWidget}
+                          handleUpdateElementSetting={handleUpdateElementSetting}
+                          language={language}
+                        />
+
+                        {/* Dynamically render fields inside schema with search filter query */}
+                        {currentWidget.type === 'hero_slider' || currentWidget.type === 'property_grid' ? (
+                          currentWidget.type === 'property_grid' ? (
+                            <FeaturedPropertiesGridSettingsEditor
+                              currentWidget={currentWidget}
+                              handleUpdateElementSetting={handleUpdateElementSetting}
+                              language={language}
+                            />
+                          ) : (
+                          <HeroSliderSettingsEditor
+                            currentWidget={currentWidget}
+                            handleUpdateElementSetting={handleUpdateElementSetting}
+                            language={language}
+                          />
+                          )
+                        ) : (
+                          <>
+                            {propertiesActiveSubTab !== 'text' && nonTextFields.map(renderField)}
+                            {propertiesActiveSubTab !== 'settings' && textFields.map(renderField)}
+                          </>
                         )}
+                        </>
+                        );})()}
                       </div>
                     )}
 
