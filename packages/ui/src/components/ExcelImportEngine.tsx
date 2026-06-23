@@ -629,6 +629,7 @@ interface ImportReport {
 export function ExcelImportEngine({ language, onImportComplete }: ExcelImportEngineProps) {
   // Navigation Wizard steps
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [templateKind, setTemplateKind] = useState<TemplateKind>('full');
   const [fileName, setFileName] = useState<string | null>(null);
   
   // SheetJS states
@@ -756,9 +757,16 @@ export function ExcelImportEngine({ language, onImportComplete }: ExcelImportEng
 
     const headers = rawGrid[headerRowIndex].map(h => String(h || '').trim()).filter(Boolean);
     const rows = rawGrid.slice(headerRowIndex + 1).filter(row => row && row.some(cell => cell !== undefined && cell !== ''));
+    const projectHeaderCount = headers.filter((header) =>
+      TARGET_FIELDS.some((field) => field.entity === 'project' && matchesTemplateHeader(header, field))
+    ).length;
+    const propertyHeaderCount = headers.filter((header) =>
+      TARGET_FIELDS.some((field) => field.entity === 'property' && matchesTemplateHeader(header, field))
+    ).length;
 
     setExcelHeaders(headers);
     setExcelRawRows(rows);
+    setTemplateKind(propertyHeaderCount === 0 && projectHeaderCount > 0 ? 'project' : (projectHeaderCount === 0 && propertyHeaderCount > 0 ? 'property' : 'full'));
     
     // Auto-detect column mappings for awesome UX
     const initialMappings: Record<string, string> = {};
@@ -791,6 +799,7 @@ export function ExcelImportEngine({ language, onImportComplete }: ExcelImportEng
     setMappings({});
     setPreviewItems([]);
     setReport(null);
+    setTemplateKind('full');
     setStep(1);
   };
 
@@ -890,7 +899,7 @@ export function ExcelImportEngine({ language, onImportComplete }: ExcelImportEng
         const mappedData = resolveRowFields(row);
         const errors: string[] = [];
         const warnings: string[] = [];
-        const allowPropertyImport = kind !== 'project';
+        const allowPropertyImport = templateKind !== 'project';
 
         // Check Project fields
         let projectAction: 'create' | 'update' | 'none' = 'none';
@@ -1177,7 +1186,7 @@ export function ExcelImportEngine({ language, onImportComplete }: ExcelImportEng
         }
 
         // Perform Property / Unit transaction
-        if (kind !== 'project' && item.propertyAction !== 'none' && item.propertyFields) {
+        if (templateKind !== 'project' && item.propertyAction !== 'none' && item.propertyFields) {
           const propFields = { ...item.propertyFields };
           // set the associated project link ID
           if (projectId) {
@@ -1578,7 +1587,7 @@ export function ExcelImportEngine({ language, onImportComplete }: ExcelImportEng
                     );
                   })}
 
-                  {kind !== 'project' && (
+                  {templateKind !== 'project' && (
                     <>
                       {/* Category Partition Header: Properties */}
                       <tr className="bg-slate-50 border-y border-slate-150">
