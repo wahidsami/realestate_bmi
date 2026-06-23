@@ -5,11 +5,12 @@ dotenv.config();
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  DB_HOST: z.string().default('localhost'),
-  DB_PORT: z.coerce.number().int().positive().default(5432),
-  DB_NAME: z.string().min(1),
-  DB_USER: z.string().min(1),
-  DB_PASSWORD: z.string().min(1),
+  DATABASE_URL: z.string().url().optional(),
+  DB_HOST: z.string().optional(),
+  DB_PORT: z.coerce.number().int().positive().optional(),
+  DB_NAME: z.string().optional(),
+  DB_USER: z.string().optional(),
+  DB_PASSWORD: z.string().optional(),
   JWT_SECRET: z.string().min(1),
   API_PORT: z.coerce.number().int().positive().default(4000),
   JWT_ACCESS_EXPIRES_IN: z.string().default('15m'),
@@ -34,9 +35,25 @@ if (!parsed.success) {
 
 const data = parsed.data;
 
+const databaseUrl =
+  data.DATABASE_URL ||
+  (data.DB_HOST && data.DB_PORT && data.DB_NAME && data.DB_USER && data.DB_PASSWORD
+    ? `postgresql://${encodeURIComponent(data.DB_USER)}:${encodeURIComponent(data.DB_PASSWORD)}@${data.DB_HOST}:${data.DB_PORT}/${data.DB_NAME}`
+    : undefined);
+
+const normalizedDatabaseUrl = databaseUrl?.startsWith('postgres://')
+  ? databaseUrl.replace(/^postgres:\/\//, 'postgresql://')
+  : databaseUrl;
+
+if (!normalizedDatabaseUrl) {
+  throw new Error('Invalid environment configuration: provide DATABASE_URL or DB_HOST, DB_PORT, DB_NAME, DB_USER, and DB_PASSWORD');
+}
+
+process.env.DATABASE_URL = normalizedDatabaseUrl;
+
 export const env = {
   ...data,
-  DATABASE_URL: `postgresql://${encodeURIComponent(data.DB_USER)}:${encodeURIComponent(data.DB_PASSWORD)}@${data.DB_HOST}:${data.DB_PORT}/${data.DB_NAME}`,
+  DATABASE_URL: normalizedDatabaseUrl,
   CLIENT_ORIGINS: [data.WEB_URL, data.ADMIN_URL],
   PORT: data.API_PORT,
   UPLOAD_DIR: data.UPLOAD_PATH,

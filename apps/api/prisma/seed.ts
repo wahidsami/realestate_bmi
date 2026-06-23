@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { prisma } from '../src/config/prisma.js';
 import { ensureMediaStorageLayout, buildMediaDirectory, buildMediaRelativePath } from '../src/utils/mediaStorage.js';
-import { PLACEHOLDER_PROPERTY_FEATURED_MEDIA_ID, PLACEHOLDER_PROPERTY_GALLERY_MEDIA_ID } from '../../../packages/shared/src/constants/mediaPlaceholders.ts';
+import { PLACEHOLDER_PROPERTY_FEATURED_MEDIA_ID, PLACEHOLDER_PROPERTY_GALLERY_MEDIA_ID } from '../src/constants/mediaPlaceholders.js';
 
 const permissions = [
   'properties.create',
