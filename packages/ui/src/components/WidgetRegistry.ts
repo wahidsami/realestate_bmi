@@ -14,6 +14,7 @@ export interface WidgetRegistryItem {
   defaultSettings: {
     [key: string]: any;
   };
+  settingsSchema?: Record<string, any>;
 }
 
 // Full Widget Registry mapping out all requested modules with full Arabized & English settings
@@ -692,12 +693,130 @@ export const WIDGET_REGISTRY: WidgetRegistryItem[] = [
     descriptionEn: 'Fully integrated contact form capturing prospect lead data into the platform',
     iconName: 'Mail',
     defaultSettings: {
+      headlineAr: 'طلب اتصال واستشارة من وكيل خاص',
+      headlineEn: 'Request a Private Consultation',
+      subheadlineAr: 'اترك بياناتك وسيقوم فريق المبيعات بالتواصل معك سريعاً لتنسيق العرض المناسب.',
+      subheadlineEn: 'Leave your details and our sales team will contact you shortly to arrange the right offer.',
       buttonTextAr: 'طلب اتصال واستشارة من وكيل خاص',
       buttonTextEn: 'Request Private Call & Consultation',
+      nameLabelAr: 'الاسم الكامل',
+      nameLabelEn: 'Full Name',
+      phoneLabelAr: 'رقم الجوال',
+      phoneLabelEn: 'Phone Number',
+      emailLabelAr: 'البريد الإلكتروني',
+      emailLabelEn: 'Email Address',
+      messageLabelAr: 'ملاحظاتك',
+      messageLabelEn: 'Your Notes',
       placeholderNameAr: 'الاسم الكريم بالكامل',
       placeholderNameEn: 'Your Full Noble Name',
+      placeholderPhoneAr: 'رقم الجوال',
+      placeholderPhoneEn: 'Phone number',
+      placeholderEmailAr: 'البريد الإلكتروني',
+      placeholderEmailEn: 'Email address',
+      placeholderMessageAr: 'اكتب تفاصيل طلبك أو المشروع الذي تبحث عنه',
+      placeholderMessageEn: 'Write your request details or the property you want',
       submittingTextAr: 'جاري مراجعة طلب الاستشارة السكنية...',
-      submittingTextEn: 'Notifying sales advisors...'
+      submittingTextEn: 'Notifying sales advisors...',
+      labelColor: '#f8fafc',
+      inputTextColor: '#e2e8f0',
+      inputBgColor: '#020617',
+      inputBorderColor: '#1e293b',
+      inputPlaceholderColor: '#64748b',
+      buttonBgColor: '#d4af37',
+      buttonTextColor: '#020617',
+      accentColor: '#d4af37'
+    },
+    settingsSchema: {
+      headlineAr: { type: 'string', labelAr: 'العنوان الرئيسي (العربية)', labelEn: 'Headline (Arabic)', default: 'طلب اتصال واستشارة من وكيل خاص' },
+      headlineEn: { type: 'string', labelAr: 'العنوان الرئيسي (الإنجليزية)', labelEn: 'Headline (English)', default: 'Request a Private Consultation' },
+      subheadlineAr: { type: 'text', labelAr: 'الوصف المختصر (العربية)', labelEn: 'Short Description (Arabic)', default: 'اترك بياناتك وسيقوم فريق المبيعات بالتواصل معك سريعاً لتنسيق العرض المناسب.' },
+      subheadlineEn: { type: 'text', labelAr: 'الوصف المختصر (الإنجليزية)', labelEn: 'Short Description (English)', default: 'Leave your details and our sales team will contact you shortly to arrange the right offer.' },
+      nameLabelAr: { type: 'string', labelAr: 'اسم الحقل 1 (العربية)', labelEn: 'Field 1 Label (Arabic)', default: 'الاسم الكامل' },
+      nameLabelEn: { type: 'string', labelAr: 'اسم الحقل 1 (الإنجليزية)', labelEn: 'Field 1 Label (English)', default: 'Full Name' },
+      phoneLabelAr: { type: 'string', labelAr: 'اسم الحقل 2 (العربية)', labelEn: 'Field 2 Label (Arabic)', default: 'رقم الجوال' },
+      phoneLabelEn: { type: 'string', labelAr: 'اسم الحقل 2 (الإنجليزية)', labelEn: 'Field 2 Label (English)', default: 'Phone Number' },
+      emailLabelAr: { type: 'string', labelAr: 'اسم الحقل 3 (العربية)', labelEn: 'Field 3 Label (Arabic)', default: 'البريد الإلكتروني' },
+      emailLabelEn: { type: 'string', labelAr: 'اسم الحقل 3 (الإنجليزية)', labelEn: 'Field 3 Label (English)', default: 'Email Address' },
+      messageLabelAr: { type: 'string', labelAr: 'اسم الحقل 4 (العربية)', labelEn: 'Field 4 Label (Arabic)', default: 'ملاحظاتك' },
+      messageLabelEn: { type: 'string', labelAr: 'اسم الحقل 4 (الإنجليزية)', labelEn: 'Field 4 Label (English)', default: 'Your Notes' },
+      buttonTextAr: { type: 'string', labelAr: 'نص الزر (العربية)', labelEn: 'Button Text (Arabic)', default: 'طلب اتصال واستشارة من وكيل خاص' },
+      buttonTextEn: { type: 'string', labelAr: 'نص الزر (الإنجليزية)', labelEn: 'Button Text (English)', default: 'Request Private Call & Consultation' },
+      labelColor: { type: 'color', labelAr: 'لون العناوين', labelEn: 'Label Color', default: '#f8fafc' },
+      inputTextColor: { type: 'color', labelAr: 'لون النص داخل الحقول', labelEn: 'Input Text Color', default: '#e2e8f0' },
+      inputBgColor: { type: 'color', labelAr: 'لون خلفية الحقول', labelEn: 'Input Background Color', default: '#020617' },
+      inputBorderColor: { type: 'color', labelAr: 'لون حدود الحقول', labelEn: 'Input Border Color', default: '#1e293b' },
+      inputPlaceholderColor: { type: 'color', labelAr: 'لون النص الإرشادي', labelEn: 'Placeholder Color', default: '#64748b' },
+      buttonBgColor: { type: 'color', labelAr: 'لون الزر', labelEn: 'Button Background Color', default: '#d4af37' },
+      buttonTextColor: { type: 'color', labelAr: 'لون نص الزر', labelEn: 'Button Text Color', default: '#020617' },
+    }
+  },
+  {
+    type: 'contact_showcase',
+    category: 'CONTACT',
+    labelAr: 'لوحة اتصال فاخرة',
+    labelEn: 'Luxury Contact Showcase',
+    descriptionAr: 'نسخة مطوّرة من نموذج التواصل مع عناوين واضحة ونصوص إرشادية ولوحة تعريفية جذابة',
+    descriptionEn: 'A richer premium contact widget with visible labels, trust signals, and advanced styling',
+    iconName: 'MessageSquare',
+    defaultSettings: {
+      headlineAr: 'تواصل مباشر مع مستشارك العقاري',
+      headlineEn: 'Speak With Your Real Estate Advisor',
+      subheadlineAr: 'نموذج فخم وواضح لطلب الاتصال مع إبراز سريع لثقة الخدمة ومؤشرات الإنجاز.',
+      subheadlineEn: 'A premium and clear contact form with trust cues and strong conversion layout.',
+      nameLabelAr: 'اسمك الكامل',
+      nameLabelEn: 'Your Full Name',
+      phoneLabelAr: 'رقم الجوال',
+      phoneLabelEn: 'Mobile Number',
+      emailLabelAr: 'البريد الإلكتروني',
+      emailLabelEn: 'Email Address',
+      messageLabelAr: 'رسالتك',
+      messageLabelEn: 'Your Message',
+      placeholderNameAr: 'اكتب اسمك الكامل',
+      placeholderNameEn: 'Enter your full name',
+      placeholderPhoneAr: 'اكتب رقم الجوال',
+      placeholderPhoneEn: 'Enter your phone number',
+      placeholderEmailAr: 'اكتب بريدك الإلكتروني',
+      placeholderEmailEn: 'Enter your email address',
+      placeholderMessageAr: 'اخبرنا بما تحتاجه من مشروع أو عقار',
+      placeholderMessageEn: 'Tell us which property or project you need',
+      buttonTextAr: 'أرسل الطلب الآن',
+      buttonTextEn: 'Send Request Now',
+      submittingTextAr: 'جارٍ إرسال طلبك...',
+      submittingTextEn: 'Sending your request...',
+      labelColor: '#f8fafc',
+      inputTextColor: '#f8fafc',
+      inputBgColor: 'rgba(2, 6, 23, 0.8)',
+      inputBorderColor: '#334155',
+      inputPlaceholderColor: '#94a3b8',
+      buttonBgColor: '#d4af37',
+      buttonTextColor: '#020617',
+      accentColor: '#d4af37',
+      statsAr: ['استجابة سريعة', 'دعم ثنائي اللغة', 'استشارة مبدئية'],
+      statsEn: ['Fast response', 'Bilingual support', 'Initial consultation']
+    },
+    settingsSchema: {
+      headlineAr: { type: 'string', labelAr: 'العنوان الرئيسي (العربية)', labelEn: 'Headline (Arabic)', default: 'تواصل مباشر مع مستشارك العقاري' },
+      headlineEn: { type: 'string', labelAr: 'العنوان الرئيسي (الإنجليزية)', labelEn: 'Headline (English)', default: 'Speak With Your Real Estate Advisor' },
+      subheadlineAr: { type: 'text', labelAr: 'الوصف القصير (العربية)', labelEn: 'Short Description (Arabic)', default: 'نموذج فخم وواضح لطلب الاتصال مع إبراز سريع لثقة الخدمة ومؤشرات الإنجاز.' },
+      subheadlineEn: { type: 'text', labelAr: 'الوصف القصير (الإنجليزية)', labelEn: 'Short Description (English)', default: 'A premium and clear contact form with trust cues and strong conversion layout.' },
+      nameLabelAr: { type: 'string', labelAr: 'حقل الاسم (العربية)', labelEn: 'Name Label (Arabic)', default: 'اسمك الكامل' },
+      nameLabelEn: { type: 'string', labelAr: 'حقل الاسم (الإنجليزية)', labelEn: 'Name Label (English)', default: 'Your Full Name' },
+      phoneLabelAr: { type: 'string', labelAr: 'حقل الجوال (العربية)', labelEn: 'Phone Label (Arabic)', default: 'رقم الجوال' },
+      phoneLabelEn: { type: 'string', labelAr: 'حقل الجوال (الإنجليزية)', labelEn: 'Phone Label (English)', default: 'Mobile Number' },
+      emailLabelAr: { type: 'string', labelAr: 'حقل البريد (العربية)', labelEn: 'Email Label (Arabic)', default: 'البريد الإلكتروني' },
+      emailLabelEn: { type: 'string', labelAr: 'حقل البريد (الإنجليزية)', labelEn: 'Email Label (English)', default: 'Email Address' },
+      messageLabelAr: { type: 'string', labelAr: 'حقل الرسالة (العربية)', labelEn: 'Message Label (Arabic)', default: 'رسالتك' },
+      messageLabelEn: { type: 'string', labelAr: 'حقل الرسالة (الإنجليزية)', labelEn: 'Message Label (English)', default: 'Your Message' },
+      buttonTextAr: { type: 'string', labelAr: 'نص الزر (العربية)', labelEn: 'Button Text (Arabic)', default: 'أرسل الطلب الآن' },
+      buttonTextEn: { type: 'string', labelAr: 'نص الزر (الإنجليزية)', labelEn: 'Button Text (English)', default: 'Send Request Now' },
+      labelColor: { type: 'color', labelAr: 'لون العناوين', labelEn: 'Label Color', default: '#f8fafc' },
+      inputTextColor: { type: 'color', labelAr: 'لون النص داخل الحقول', labelEn: 'Input Text Color', default: '#f8fafc' },
+      inputBgColor: { type: 'color', labelAr: 'لون خلفية الحقول', labelEn: 'Input Background Color', default: 'rgba(2, 6, 23, 0.8)' },
+      inputBorderColor: { type: 'color', labelAr: 'لون الحدود', labelEn: 'Input Border Color', default: '#334155' },
+      inputPlaceholderColor: { type: 'color', labelAr: 'لون النص الإرشادي', labelEn: 'Placeholder Color', default: '#94a3b8' },
+      buttonBgColor: { type: 'color', labelAr: 'لون الزر', labelEn: 'Button Background Color', default: '#d4af37' },
+      buttonTextColor: { type: 'color', labelAr: 'لون نص الزر', labelEn: 'Button Text Color', default: '#020617' },
+      accentColor: { type: 'color', labelAr: 'لون التمييز', labelEn: 'Accent Color', default: '#d4af37' },
     }
   },
   {
@@ -807,4 +926,36 @@ export const getWidgetByCategory = (category: WidgetCategoryType) => {
 export const getWidgetDefaultSettings = (type: string) => {
   const item = WIDGET_REGISTRY.find(w => w.type === type);
   return item ? JSON.parse(JSON.stringify(item.defaultSettings)) : {};
+};
+
+const isPlainObject = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+};
+
+const mergeWidgetSettingsRecursive = (defaults: unknown, incoming: unknown): unknown => {
+  if (incoming === undefined || incoming === null) return defaults;
+
+  if (typeof incoming === 'string') {
+    return incoming.trim() === '' ? defaults : incoming;
+  }
+
+  if (Array.isArray(incoming)) {
+    return incoming.length > 0 ? incoming : defaults;
+  }
+
+  if (isPlainObject(defaults) && isPlainObject(incoming)) {
+    const merged: Record<string, unknown> = { ...defaults };
+    for (const [key, value] of Object.entries(incoming)) {
+      const defaultValue = (defaults as Record<string, unknown>)[key];
+      merged[key] = mergeWidgetSettingsRecursive(defaultValue, value);
+    }
+    return merged;
+  }
+
+  return incoming;
+};
+
+export const mergeWidgetSettingsWithDefaults = (type: string, settings: Record<string, any> | undefined | null = {}) => {
+  const defaults = getWidgetDefaultSettings(type);
+  return mergeWidgetSettingsRecursive(defaults, settings || {}) as Record<string, any>;
 };

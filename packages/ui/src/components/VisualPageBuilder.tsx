@@ -13,7 +13,8 @@ import {
   WIDGET_REGISTRY, 
   WidgetCategoryType, 
   getWidgetByCategory, 
-  getWidgetDefaultSettings 
+  getWidgetDefaultSettings,
+  mergeWidgetSettingsWithDefaults
 } from './WidgetRegistry';
 import { WidgetRenderer } from './WidgetRenderer';
 import { VisualEffectsSettingsPanel } from './VisualEffectsSettingsPanel';
@@ -1626,10 +1627,7 @@ export const VisualPageBuilder: React.FC<VisualPageBuilderProps> = ({ onExit, on
     if (!widget) return null;
     return {
       ...widget,
-      settings: {
-        ...getWidgetDefaultSettings(widget.type),
-        ...(widget.settings || {})
-      }
+      settings: mergeWidgetSettingsWithDefaults(widget.type, widget.settings)
     };
   };
 
