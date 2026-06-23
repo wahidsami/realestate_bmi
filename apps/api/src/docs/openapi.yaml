@@ -1,0 +1,14 @@
+openapi: 3.0.3
+info:
+  title: BINA Real Estate API
+  version: 0.1.0
+  description: Backend API foundation for the BINA Real Estate monorepo.
+servers:
+  - url: http://localhost:4000/api
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: API is healthy

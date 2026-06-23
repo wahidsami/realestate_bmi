@@ -1,0 +1,6 @@
+{
+  "name": "BINA & EDARAH",
+  "description": "Enterprise-grade Saudi corporate premium real estate platform featuring advanced translations, RTL support, and custom theme layouts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,3 @@
+-- Initial migration scaffold for the enterprise real-estate schema.
+-- Generate the authoritative SQL with Prisma once dependencies are installed:
+--   npm run prisma:migrate --workspace=@bina/api

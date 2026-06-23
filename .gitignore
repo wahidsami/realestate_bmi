@@ -1,0 +1,15 @@
+node_modules/
+build/
+dist/
+coverage/
+.tmp/
+AppData/
+.codex/
+.DS_Store
+*.log
+$*.xlsx
+*.xlsx
+~$*.xlsx
+apps/api/uploads/images/2026/06/[0-9]*
+.env*
+!.env.example
