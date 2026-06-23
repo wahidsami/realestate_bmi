@@ -78,7 +78,7 @@ const isRecoverableApiError = (error: unknown) => {
     return false;
   }
 
-  return !error.status || error.status >= 500 || error.status === 404;
+  return !error.status || error.status >= 500 || error.status === 404 || error.status === 429;
 };
 
 export class ApiPropertyRepository implements IPropertyRepository {

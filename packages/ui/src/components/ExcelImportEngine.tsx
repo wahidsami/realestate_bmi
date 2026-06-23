@@ -162,6 +162,14 @@ const TARGET_FIELDS: TargetField[] = [
     synonyms: ['تاريخ الانتهاء', 'تاريخ التسليم', 'تاريخ الاكتمال', 'تاريخ التدشين', 'completion date', 'completion_date', 'date of completion']
   },
   {
+    key: 'project.googleMapsLink',
+    labelAr: 'رابط خرائط جوجل للمشروع',
+    labelEn: 'Project Google Maps Link',
+    entity: 'project',
+    type: 'string',
+    synonyms: ['google maps', 'google map link', 'google maps link', 'project google maps', 'googlemap', 'map link', 'maps url']
+  },
+  {
     key: 'project.units',
     labelAr: 'عدد الوحدات',
     labelEn: 'Project Units',
@@ -434,6 +442,8 @@ const getTemplateExampleValue = (field: TargetField) => {
       return 'King Salman Road';
     case 'project.completionDate':
       return '2026-12-31';
+    case 'project.googleMapsLink':
+      return 'https://maps.google.com/?q=24.7136,46.6753';
     case 'project.units':
       return '120';
     case 'project.status':
@@ -523,6 +533,8 @@ const getTemplateHeaderLabel = (field: TargetField) => {
       return 'Location (Arabic)';
     case 'project.location.en':
       return 'Location (English)';
+    case 'project.googleMapsLink':
+      return 'Project Google Maps Link';
     case 'property.title.ar':
       return 'Property Title (Arabic)';
     case 'property.title.en':
@@ -948,6 +960,7 @@ export function ExcelImportEngine({ language, onImportComplete }: ExcelImportEng
             location,
             address: location,
             completionDate: String(mappedData['project.completionDate'] || ''),
+            googleMapsLink: String(mappedData['project.googleMapsLink'] || ''),
             units: Number(mappedData['project.units'] || 0),
             status: (mappedData['project.status'] as any) || 'available',
             featured: Boolean(mappedData['project.featured']),
@@ -1259,6 +1272,7 @@ export function ExcelImportEngine({ language, onImportComplete }: ExcelImportEng
         [language === 'ar' ? 'المطور' : 'Developer', language === 'ar' ? 'اسم المطور أو شركة التطوير' : 'Developer or development company name', 'Bina & Edarah'],
         [language === 'ar' ? 'حالة المشروع' : 'Project Status', language === 'ar' ? 'حالة المشروع الحالية' : 'Current project status', 'available'],
         [language === 'ar' ? 'تاريخ اكتمال المشروع' : 'Project Completion Date', language === 'ar' ? 'تاريخ التسليم أو الاكتمال' : 'Expected or actual completion date', '2026-12-31'],
+        [language === 'ar' ? 'رابط خرائط جوجل' : 'Google Maps Link', language === 'ar' ? 'رابط الموقع على خرائط جوجل' : 'Google Maps location URL', 'https://maps.google.com/?q=24.7136,46.6753'],
       ]);
       projectFieldsSheet['!cols'] = [{ wch: 24 }, { wch: 48 }, { wch: 24 }];
       XLSX.utils.book_append_sheet(
