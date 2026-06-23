@@ -951,7 +951,7 @@ export const PublicPages: React.FC<PublicPagesProps> = ({ activePage, onNavigate
           <div className="w-20 h-1 mx-auto rounded" style={{ backgroundColor: theme.secondary }}></div>
         </div>
         <div className="grid grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)] gap-8 items-start">
-          <aside className="bg-white/95 rounded-2xl border border-neutral-200 shadow-sm overflow-hidden sticky top-6">
+          <aside className="bg-white/95 rounded-2xl border border-neutral-200 shadow-sm overflow-hidden relative z-10 xl:sticky xl:top-6 xl:self-start">
             <div className="px-5 py-4 bg-slate-950 text-white flex items-center justify-between gap-3">
               <div className="text-right">
                 <div className="text-[10px] uppercase tracking-[0.24em] text-amber-300 font-black">
@@ -1052,7 +1052,7 @@ export const PublicPages: React.FC<PublicPagesProps> = ({ activePage, onNavigate
             </div>
           </aside>
 
-          <section className="space-y-6">
+          <section className="space-y-6 relative z-0">
             {hasFilter && (
               <div className="p-4 bg-amber-50/80 border border-amber-200/60 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 text-right text-xs text-amber-900 animate-fadeIn shadow-sm">
                 <div className="flex items-center gap-2">
