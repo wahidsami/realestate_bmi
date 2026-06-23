@@ -1245,14 +1245,17 @@ export function ExcelImportEngine({ language, onImportComplete }: ExcelImportEng
   const downloadTemplate = async (kind: TemplateKind = 'full') => {
     const fields = getTemplateFields(kind);
     const headers = fields.map((field) => getTemplateHeaderLabel(field));
-    const exampleRow = fields.map((field) => getTemplateExampleValue(field));
     const groupRow = fields.map((field) => getTemplateGroupLabel(field, kind));
+    const exampleRow = fields.map((field) => getTemplateExampleValue(field));
+    const starterRows = kind === 'project'
+      ? Array.from({ length: 15 }, () => fields.map(() => ''))
+      : [exampleRow];
 
     const workbook = XLSX.utils.book_new();
     const sheetData = [
       groupRow,
       headers,
-      exampleRow,
+      ...starterRows,
     ];
 
     const sheet = XLSX.utils.aoa_to_sheet(sheetData);
@@ -1303,7 +1306,7 @@ export function ExcelImportEngine({ language, onImportComplete }: ExcelImportEng
     const instructions = XLSX.utils.aoa_to_sheet([
       [language === 'ar' ? 'تعليمات الاستخدام' : 'How to Use'],
       [language === 'ar' ? '1) اترك الصف الأول الخاص بالمجموعة والصف الثاني الخاص بالأعمدة كما هما.' : '1) Keep the first group row and the second header row unchanged.'],
-      [language === 'ar' ? '2) الصف الثالث هو مثال فقط. املأ البيانات الفعلية بدءاً من الصف الرابع.' : '2) The third row is sample data only. Start entering real data from row four.'],
+      [language === 'ar' ? '2) املأ صفاً واحداً لكل مشروع. في قالب المشاريع، الصفوف الأولى فارغة وجاهزة للإدخال.' : '2) Fill one row per project. In the project template, the starter rows are blank and ready for entry.'],
       [language === 'ar' ? '3) يمكنك اختيار القيم من القوائم المنسدلة داخل الملف، خصوصاً نوع العقار والحالة ونوع البيع/الإيجار.' : '3) Use the in-cell dropdowns where available, especially for property type, status, and sale/rent fields.'],
       [language === 'ar' ? '4) إذا احتجت نوع عقار غير موجود في القائمة، يمكنك كتابته يدوياً وسيتم قبوله.' : '4) If you need a property type that is not in the list, you can still type it manually and it will be accepted.'],
       [language === 'ar' ? '5) يمكنك ترك المشروع فارغاً إذا كان العقار مستقلاً وغير تابع لأي مشروع.' : '5) You can leave the project columns empty if the property is standalone.'],
