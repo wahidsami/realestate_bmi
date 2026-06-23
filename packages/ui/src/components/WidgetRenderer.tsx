@@ -14,6 +14,7 @@ import { EffectsWrapper, ShapeDivider } from './EffectsWrapper';
 import { getIconComponent } from './AmenitiesSection';
 import { FullWidthHeroSliderWidget } from './FullWidthHeroSliderWidget';
 import { FeaturedPropertiesGridWidget } from './FeaturedPropertiesGridWidget';
+import { getWidgetDefaultSettings } from './WidgetRegistry';
 
 interface WidgetRendererProps {
   widget: VisualWidget;
@@ -242,7 +243,7 @@ export const WidgetRenderer: React.FC<WidgetRendererProps> = ({ widget, language
   };
 
   const isRtl = language === 'ar';
-  const settings = widget.settings;
+  const settings = { ...getWidgetDefaultSettings(widget.type), ...widget.settings };
   const styles = resolveWidgetStyles(settings);
   const visibilityClass = resolveVisibilityClasses(settings);
   const { initial, animate, whileHover, transition } = resolveAnimationProps(settings);

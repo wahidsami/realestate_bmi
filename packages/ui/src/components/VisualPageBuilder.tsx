@@ -1352,56 +1352,11 @@ export const VisualPageBuilder: React.FC<VisualPageBuilderProps> = ({ onExit, on
   const addWidget = (secId: string, rowId: string, colId: string, type: string) => {
     if (!selectedPage) return;
     
-    // Get default settings from our Widget Registry
-    const defaults = getWidgetDefaultSettings(type);
-    
     const newWidget: VisualWidget = {
       id: `wid_${Date.now()}`,
       type,
       settings: {
-        ...defaults,
-        responsiveVisibility: {
-          desktop: true,
-          tablet: true,
-          mobile: true
-        },
-        typography: {
-          fontSize: 'base',
-          fontWeight: 'normal',
-          fontFamily: 'sans',
-          lineHeight: 'normal'
-        },
-        colors: {
-          text: '',
-          background: '',
-          border: '',
-          accent: ''
-        },
-        borders: {
-          radius: 'none',
-          width: '0',
-          style: 'none',
-          color: ''
-        },
-        spacing: {
-          paddingTop: 'none',
-          paddingBottom: 'none',
-          paddingLeft: 'none',
-          paddingRight: 'none',
-          marginTop: 'none',
-          marginBottom: 'none',
-          marginLeft: 'none',
-          marginRight: 'none'
-        },
-        background: {
-          color: '',
-          opacity: 100,
-          imageUrl: ''
-        },
-        animation: {
-          type: 'none',
-          hoverEffect: 'none'
-        }
+        ...getWidgetDefaultSettings(type),
       }
     };
 
@@ -1466,7 +1421,11 @@ export const VisualPageBuilder: React.FC<VisualPageBuilderProps> = ({ onExit, on
     
     const uWidget: VisualWidget = {
       ...JSON.parse(JSON.stringify(widget)),
-      id: `wid_${Date.now()}`
+      id: `wid_${Date.now()}`,
+      settings: {
+        ...getWidgetDefaultSettings(widget.type),
+        ...(JSON.parse(JSON.stringify(widget)).settings || {})
+      }
     };
 
     const updatedSecs = selectedPage.sections.map(s => {
@@ -1663,7 +1622,15 @@ export const VisualPageBuilder: React.FC<VisualPageBuilderProps> = ({ onExit, on
     const s = selectedPage.sections.find(x => x.id === selectedSectionId);
     const r = s?.rows.find(x => x.id === selectedRowId);
     const c = r?.columns.find(x => x.id === selectedColId);
-    return c?.widgets.find(x => x.id === selectedWidgetId) || null;
+    const widget = c?.widgets.find(x => x.id === selectedWidgetId) || null;
+    if (!widget) return null;
+    return {
+      ...widget,
+      settings: {
+        ...getWidgetDefaultSettings(widget.type),
+        ...(widget.settings || {})
+      }
+    };
   };
 
   const currentWidget = getCurrentWidget();
