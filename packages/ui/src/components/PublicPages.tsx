@@ -16,6 +16,7 @@ import {
   visualPagesRepository
 } from '@bina/shared';
 import { apiClient } from '@bina/shared';
+import { PLACEHOLDER_PROPERTY_FEATURED_MEDIA_ID, PLACEHOLDER_PROPERTY_GALLERY_MEDIA_ID } from '@bina/shared';
 import { VisualPageRenderer } from './WidgetRenderer';
 import { AmenitiesSection } from './AmenitiesSection';
 import { PropertyDetailsPageContent } from './PropertyDetailsPageContent';
@@ -278,17 +279,24 @@ export const PublicPages: React.FC<PublicPagesProps> = ({ activePage, onNavigate
         />
       );
     }
-    // Fallbacks
-    if (type?.toLowerCase().includes('villa') || type?.includes('فيلا')) {
-      return <NajdiVillaVector className="w-full h-full object-cover" />;
+    if (mediaItems[PLACEHOLDER_PROPERTY_FEATURED_MEDIA_ID]) {
+      return (
+        <img
+          src={mediaItems[PLACEHOLDER_PROPERTY_FEATURED_MEDIA_ID]}
+          alt="BINA luxury asset"
+          className="w-full h-full object-cover"
+          referrerPolicy="no-referrer"
+        />
+      );
     }
-    if (type?.toLowerCase().includes('penthouse') || type?.includes('بنتهاوس')) {
-      return <PenthouseVector className="w-full h-full object-cover" />;
-    }
-    if (type?.toLowerCase().includes('apartment') || type?.includes('شقة')) {
-      return <SmartApartmentVector className="w-full h-full object-cover" />;
-    }
-    return <ArchitecturalPlanSVG className="w-full h-full object-cover" />;
+    return (
+      <img
+        src={apiClient.getAbsoluteUrl(`/api/media/${PLACEHOLDER_PROPERTY_FEATURED_MEDIA_ID}/file`)}
+        alt="BINA luxury asset"
+        className="w-full h-full object-cover"
+        referrerPolicy="no-referrer"
+      />
+    );
   };
 
   // PAGE RENDER OVERRIDES USING DYNAMIC VISUAL BUILDER PAGES AND TEMPLATES
@@ -1169,7 +1177,7 @@ export const PublicPages: React.FC<PublicPagesProps> = ({ activePage, onNavigate
               )}
 
               {/* Multi-photo strip */}
-              {selectedProject.galleryImageIds && selectedProject.galleryImageIds.length > 0 && (
+              {selectedProject.galleryImageIds && selectedProject.galleryImageIds.length > 0 ? (
                 <div className="bg-white border border-neutral-200 rounded-2xl p-6 md:p-8 space-y-4 shadow-sm">
                   <h3 className="font-sans font-black text-lg text-neutral-900">
                     {language === 'ar' ? 'البوم صور ومخططات الوحدات' : 'Project Detail Architectural Gallery'}
@@ -1187,10 +1195,26 @@ export const PublicPages: React.FC<PublicPagesProps> = ({ activePage, onNavigate
                             alt={`Gallery asset ${index}`}
                             className="max-h-full max-w-full object-contain"
                             referrerPolicy="no-referrer"
-                          />
-                        </div>
-                      );
-                    })}
+                        />
+                      </div>
+                    );
+                  })}
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white border border-neutral-200 rounded-2xl p-6 md:p-8 space-y-4 shadow-sm">
+                  <h3 className="font-sans font-black text-lg text-neutral-900">
+                    {language === 'ar' ? 'البوم صور ومخططات الوحدات' : 'Project Detail Architectural Gallery'}
+                  </h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    <div className="h-44 rounded-xl overflow-hidden border border-neutral-100 bg-neutral-50 flex items-center justify-center p-1 shadow-sm">
+                      <img
+                        src={mediaItems[PLACEHOLDER_PROPERTY_GALLERY_MEDIA_ID] || apiClient.getAbsoluteUrl(`/api/media/${PLACEHOLDER_PROPERTY_GALLERY_MEDIA_ID}/file`)}
+                        alt="Project gallery placeholder"
+                        className="max-h-full max-w-full object-contain"
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
