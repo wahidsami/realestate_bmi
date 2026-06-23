@@ -40,6 +40,11 @@ export const createServer = () => {
   app.use('/health', healthRouter);
   app.use('/api', apiRouter);
 
+  // Root route for friendly message when visiting the API domain directly
+  app.get('/', (_req, res) => {
+    res.json({ success: true, message: 'API is running' });
+  });
+
   app.use(notFoundHandler);
   app.use(errorHandler);
 
