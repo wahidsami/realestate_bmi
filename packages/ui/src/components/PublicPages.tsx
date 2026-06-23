@@ -22,7 +22,7 @@ import { AmenitiesSection } from './AmenitiesSection';
 import { PropertyDetailsPageContent } from './PropertyDetailsPageContent';
 import { Property, Project, PageContent, Inquiry, MediaItem, HeroSlide } from '@bina/types';
 import { NajdiVillaVector, PenthouseVector, SmartApartmentVector, ArchitecturalPlanSVG } from './VectorGraphics';
-import { readStorageItem, removeStorageItem } from '@bina/utils';
+import { readStorageItem, removeStorageItem, writeStorageItem } from '@bina/utils';
 import { displayBilingualOrNA, displayCurrencyOrNA, displayNumberOrNA } from '@bina/shared';
 import { 
   Compass, 
@@ -51,6 +51,40 @@ interface PublicPagesProps {
   onNavigate?: (page: string) => void;
 }
 
+type PropertySearchFilter = {
+  type: string;
+  district: string;
+  beds: string;
+  budget: string;
+};
+
+const DEFAULT_PROPERTY_SEARCH_FILTER: PropertySearchFilter = {
+  type: 'all',
+  district: 'all',
+  beds: 'all',
+  budget: 'all'
+};
+
+const readPropertySearchFilter = (): PropertySearchFilter => {
+  const raw = readStorageItem('session', 'property_search_filter');
+  if (!raw) return DEFAULT_PROPERTY_SEARCH_FILTER;
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return DEFAULT_PROPERTY_SEARCH_FILTER;
+
+    return {
+      type: typeof parsed.type === 'string' && parsed.type ? parsed.type : 'all',
+      district: typeof parsed.district === 'string' && parsed.district ? parsed.district : 'all',
+      beds: typeof parsed.beds === 'string' && parsed.beds ? parsed.beds : 'all',
+      budget: typeof parsed.budget === 'string' && parsed.budget ? parsed.budget : 'all'
+    };
+  } catch (error) {
+    console.error('Failed parsing property search filter from storage:', error);
+    return DEFAULT_PROPERTY_SEARCH_FILTER;
+  }
+};
+
 export const PublicPages: React.FC<PublicPagesProps> = ({ activePage, onNavigate }) => {
   const { staticT, t, language } = useLanguage();
   const { theme, settings } = useTheme();
@@ -62,6 +96,7 @@ export const PublicPages: React.FC<PublicPagesProps> = ({ activePage, onNavigate
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [mediaItems, setMediaItems] = useState<Record<string, string>>({}); // id -> base64
   const [visualPages, setVisualPages] = useState<any[]>([]);
+  const [propertySearchFilter, setPropertySearchFilter] = useState<PropertySearchFilter>(DEFAULT_PROPERTY_SEARCH_FILTER);
 
   // Subscribe to Page Builder published elements
   useEffect(() => {
@@ -91,6 +126,11 @@ export const PublicPages: React.FC<PublicPagesProps> = ({ activePage, onNavigate
       unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (activePage !== 'properties') return;
+    setPropertySearchFilter(readPropertySearchFilter());
+  }, [activePage]);
   
   // Contact Form State
   const [fullName, setFullName] = useState('');
@@ -823,54 +863,85 @@ export const PublicPages: React.FC<PublicPagesProps> = ({ activePage, onNavigate
 
   // Page 2: PROPERTIES (Luxury Catalog)
   if (activePage === 'properties') {
+    const filter = propertySearchFilter;
+    const hasFilter = Object.values(filter).some((value) => value && value !== 'all');
     let filteredProperties = [...properties];
-    let hasFilter = false;
-    
-    const searchFilterStr = readStorageItem('session', 'property_search_filter');
-    if (searchFilterStr) {
-      try {
-        const filter = JSON.parse(searchFilterStr);
-        if (filter && (filter.type !== 'all' || filter.district !== 'all' || filter.beds !== 'all' || filter.budget !== 'all')) {
-          hasFilter = true;
-          
-          // Match Type
-          if (filter.type && filter.type !== 'all') {
-            filteredProperties = filteredProperties.filter(p => {
-              const typeStr = (p.type?.en || p.type || '').toString().toLowerCase();
-              const typeAr = (p.type?.ar || '').toString().toLowerCase();
-              return typeStr.includes(filter.type.toLowerCase()) || typeAr.includes(filter.type.toLowerCase());
-            });
-          }
-          
-          // Match District (location)
-          if (filter.district && filter.district !== 'all') {
-            filteredProperties = filteredProperties.filter(p => {
-              const locAr = (p.location?.ar || '').toString().toLowerCase();
-              const locEn = (p.location?.en || '').toString().toLowerCase();
-              return locAr.includes(filter.district.toLowerCase()) || locEn.includes(filter.district.toLowerCase());
-            });
-          }
-          
-          // Match Bedrooms
-          if (filter.beds && filter.beds !== 'all') {
-            const minBeds = parseInt(filter.beds, 10);
-            if (!isNaN(minBeds)) {
-              filteredProperties = filteredProperties.filter(p => p.bedrooms >= minBeds);
-            }
-          }
-          
-          // Match Budget
-          if (filter.budget && filter.budget !== 'all') {
-            const maxBudget = parseInt(filter.budget, 10);
-            if (!isNaN(maxBudget)) {
-              filteredProperties = filteredProperties.filter(p => p.price <= maxBudget);
-            }
-          }
+
+    if (hasFilter) {
+      if (filter.type && filter.type !== 'all') {
+        const typeValue = filter.type.toLowerCase();
+        filteredProperties = filteredProperties.filter((p) => {
+          const typeStr = (p.type?.en || p.type || '').toString().toLowerCase();
+          const typeAr = (p.type?.ar || '').toString().toLowerCase();
+          return typeStr.includes(typeValue) || typeAr.includes(typeValue);
+        });
+      }
+
+      if (filter.district && filter.district !== 'all') {
+        const districtValue = filter.district.toLowerCase();
+        filteredProperties = filteredProperties.filter((p) => {
+          const locAr = (p.location?.ar || '').toString().toLowerCase();
+          const locEn = (p.location?.en || '').toString().toLowerCase();
+          return locAr.includes(districtValue) || locEn.includes(districtValue);
+        });
+      }
+
+      if (filter.beds && filter.beds !== 'all') {
+        const minBeds = parseInt(filter.beds, 10);
+        if (!Number.isNaN(minBeds)) {
+          filteredProperties = filteredProperties.filter((p) => p.bedrooms >= minBeds);
         }
-      } catch (e) {
-        console.error('Failed parsing global filter storage:', e);
+      }
+
+      if (filter.budget && filter.budget !== 'all') {
+        const maxBudget = parseInt(filter.budget, 10);
+        if (!Number.isNaN(maxBudget)) {
+          filteredProperties = filteredProperties.filter((p) => p.price <= maxBudget);
+        }
       }
     }
+
+    const propertyTypeOptions = properties.reduce<Array<{ value: string; label: string }>>((acc, prop) => {
+      const value = (prop.type?.en || prop.type?.ar || '').toString().trim();
+      if (!value) return acc;
+      if (!acc.some((item) => item.value.toLowerCase() === value.toLowerCase())) {
+        acc.push({
+          value,
+          label: displayBilingualOrNA(prop.type, language)
+        });
+      }
+      return acc;
+    }, []);
+
+    const propertyDistrictOptions = properties.reduce<Array<{ value: string; label: string }>>((acc, prop) => {
+      const value = (prop.location?.en || prop.location?.ar || '').toString().trim();
+      if (!value) return acc;
+      if (!acc.some((item) => item.value.toLowerCase() === value.toLowerCase())) {
+        acc.push({
+          value,
+          label: displayBilingualOrNA(prop.location, language)
+        });
+      }
+      return acc;
+    }, []);
+
+    const propertyBedroomOptions = [1, 2, 3, 4, 5].filter((count) => properties.some((prop) => (prop.bedrooms || 0) >= count));
+    const propertyBudgetOptions = [
+      { value: '3000000', label: language === 'ar' ? 'حتى ٣,٠٠٠,٠٠٠ ريال' : 'Up to 3,000,000 SAR' },
+      { value: '5000000', label: language === 'ar' ? 'حتى ٥,٠٠٠,٠٠٠ ريال' : 'Up to 5,000,000 SAR' },
+      { value: '10000000', label: language === 'ar' ? 'حتى ١٠,٠٠٠,٠٠٠ ريال' : 'Up to 10,000,000 SAR' },
+      { value: '15000000', label: language === 'ar' ? 'حتى ١٥,٠٠٠,٠٠٠ ريال' : 'Up to 15,000,000 SAR' }
+    ];
+
+    const updatePropertySearchFilter = (nextFilter: PropertySearchFilter) => {
+      setPropertySearchFilter(nextFilter);
+      writeStorageItem('session', 'property_search_filter', JSON.stringify(nextFilter));
+    };
+
+    const resetPropertySearchFilter = () => {
+      setPropertySearchFilter(DEFAULT_PROPERTY_SEARCH_FILTER);
+      removeStorageItem('session', 'property_search_filter');
+    };
 
     return (
       <div id="pub-page-properties" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10 font-sans">
@@ -879,97 +950,197 @@ export const PublicPages: React.FC<PublicPagesProps> = ({ activePage, onNavigate
           <p className="text-neutral-500 text-sm max-w-lg mx-auto">تصفح أفضل العقارات المتاحة لدينا في أرقى أحياء الرياض وجدة المصممة لكبار الملاك وعشاق الرفاهية.</p>
           <div className="w-20 h-1 mx-auto rounded" style={{ backgroundColor: theme.secondary }}></div>
         </div>
-
-        {hasFilter && (
-          <div className="p-4 bg-amber-50/80 border border-amber-200/60 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 text-right text-xs text-amber-900 animate-fadeIn shadow-sm">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0" />
-              <span className="font-bold">
-                {language === 'ar' 
-                  ? '👑 تصفية البحث الفاخرة نشطة حالياً وتعرض نتائج مخصصة تليق بك.' 
-                  : '👑 Ultra-private search filtration is active, presenting select estates tailored to you.'}
-              </span>
-            </div>
-            <button
-              onClick={() => {
-                removeStorageItem('session', 'property_search_filter');
-                // Force state update
-                setProperties([...properties]); 
-              }}
-              className="px-4 py-2 bg-slate-950 hover:bg-slate-800 text-white font-black rounded-lg transition-all text-[11px] cursor-pointer"
-            >
-              {language === 'ar' ? 'إعادة تعيين وعرض كافة العقارات ⟲' : 'Reset & Display All Estates ⟲'}
-            </button>
-          </div>
-        )}
-
-        {filteredProperties.length === 0 ? (
-          <div className="text-center py-20 text-neutral-400 font-medium">
-            {language === 'ar' ? 'لا توجد عقارات مطابقة لبحثك المخصص حالياً.' : 'No premium estates match your exclusive search terms.'}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {filteredProperties.map((prop) => (
-              <div 
-                key={prop.id}
-                onClick={() => {
-                  if (onNavigate) {
-                    onNavigate(`property-${prop.id}`);
-                  } else {
-                    setSelectedProperty(prop);
-                  }
-                }}
-                className="bg-white rounded-lg border border-neutral-200 overflow-hidden shadow-sm hover:shadow-lg cursor-pointer transition-all duration-300 flex flex-col justify-between"
-              >
-                <div className="h-48 relative overflow-hidden bg-neutral-900">
-                  {renderItemImage(prop.featuredImageId, t(prop.type))}
-                  <span className="absolute top-4 right-4 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-black/60 text-white">
-                    {t(prop.type)}
-                  </span>
-                  <span 
-                    className={`absolute bottom-4 left-4 text-[10px] font-semibold px-2 py-0.5 rounded ${
-                      prop.status === 'available' ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-black'
-                    }`}
-                  >
-                    {staticT(prop.status === 'available' ? 'statusAvailable' : prop.status === 'reserved' ? 'statusReserved' : 'statusSold')}
-                  </span>
+        <div className="grid grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)] gap-8 items-start">
+          <aside className="bg-white/95 rounded-2xl border border-neutral-200 shadow-sm overflow-hidden sticky top-6">
+            <div className="px-5 py-4 bg-slate-950 text-white flex items-center justify-between gap-3">
+              <div className="text-right">
+                <div className="text-[10px] uppercase tracking-[0.24em] text-amber-300 font-black">
+                  {language === 'ar' ? 'تصفية فاخرة' : 'Luxury Filter'}
                 </div>
+                <h2 className="font-sans font-black text-lg">{language === 'ar' ? 'ابحث في العقارات' : 'Filter Properties'}</h2>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                <Sliders className="w-5 h-5 text-amber-300" />
+              </div>
+            </div>
 
-                <div className="p-6 space-y-4 text-right">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-1 text-neutral-400 text-xs text-right">
-                      <MapPin className="w-3.5 h-3.5 shrink-0" />
-                      <span>{t(prop.location)}</span>
-                    </div>
-                    <h3 className="font-sans font-bold text-lg text-neutral-900 line-clamp-1">{t(prop.title)}</h3>
-                  </div>
+            <div className="p-5 space-y-4 text-right">
+              <div className="p-3 rounded-xl bg-amber-50 border border-amber-100 text-amber-900 text-xs leading-relaxed">
+                {language === 'ar'
+                  ? 'استخدم هذه الفلاتر للانتقال مباشرة إلى العقار المناسب، أو امسحها لعرض كل النتائج.'
+                  : 'Use these filters to narrow the catalog instantly or clear them to show all results.'}
+              </div>
 
-                  <div className="flex justify-between items-center bg-neutral-50 p-2 text-xs text-neutral-500 rounded">
-                    <div className="flex items-center gap-1">
-                      <BedDouble className="w-3.5 h-3.5" />
-                      <span>{prop.bedrooms} {staticT('bedrooms')}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Bath className="w-3.5 h-3.5" />
-                      <span>{prop.bathrooms} {staticT('bathrooms')}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Maximize className="w-3.5 h-3.5" />
-                      <span>{prop.areaSqm} {staticT('sqm')}</span>
-                    </div>
-                  </div>
+              <div className="space-y-2">
+                <label className="block text-[11px] font-black uppercase tracking-wider text-neutral-500">
+                  {language === 'ar' ? 'نوع العقار' : 'Property Type'}
+                </label>
+                <select
+                  value={filter.type}
+                  onChange={(e) => updatePropertySearchFilter({ ...filter, type: e.target.value })}
+                  className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-3 text-sm text-right focus:outline-none focus:border-amber-400"
+                >
+                  <option value="all">{language === 'ar' ? 'كل الأنواع' : 'All types'}</option>
+                  {propertyTypeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
 
-                  <div className="pt-2 border-t border-neutral-100 flex items-center justify-between">
-                    <span className="text-xs text-neutral-400">{staticT('sar')}</span>
-                    <span className="font-sans font-extrabold text-lg text-neutral-900">
-                      {displayCurrencyOrNA(prop.price, language)}
-                    </span>
-                  </div>
+              <div className="space-y-2">
+                <label className="block text-[11px] font-black uppercase tracking-wider text-neutral-500">
+                  {language === 'ar' ? 'الحي / الموقع' : 'District / Location'}
+                </label>
+                <select
+                  value={filter.district}
+                  onChange={(e) => updatePropertySearchFilter({ ...filter, district: e.target.value })}
+                  className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-3 text-sm text-right focus:outline-none focus:border-amber-400"
+                >
+                  <option value="all">{language === 'ar' ? 'كل الأحياء' : 'All districts'}</option>
+                  {propertyDistrictOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-[11px] font-black uppercase tracking-wider text-neutral-500">
+                  {language === 'ar' ? 'عدد الغرف' : 'Bedrooms'}
+                </label>
+                <select
+                  value={filter.beds}
+                  onChange={(e) => updatePropertySearchFilter({ ...filter, beds: e.target.value })}
+                  className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-3 text-sm text-right focus:outline-none focus:border-amber-400"
+                >
+                  <option value="all">{language === 'ar' ? 'كل الأعداد' : 'Any count'}</option>
+                  {propertyBedroomOptions.map((count) => (
+                    <option key={count} value={String(count)}>
+                      {count}+ {language === 'ar' ? 'غرفة' : 'beds'}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-[11px] font-black uppercase tracking-wider text-neutral-500">
+                  {language === 'ar' ? 'الميزانية القصوى' : 'Maximum Budget'}
+                </label>
+                <select
+                  value={filter.budget}
+                  onChange={(e) => updatePropertySearchFilter({ ...filter, budget: e.target.value })}
+                  className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-3 text-sm text-right focus:outline-none focus:border-amber-400"
+                >
+                  <option value="all">{language === 'ar' ? 'بدون حد' : 'No limit'}</option>
+                  {propertyBudgetOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={resetPropertySearchFilter}
+                  className="flex-1 px-4 py-3 rounded-xl border border-neutral-200 text-neutral-700 hover:bg-neutral-50 font-bold text-sm transition-colors"
+                >
+                  {language === 'ar' ? 'إعادة تعيين' : 'Reset'}
+                </button>
+                <div className="flex-1 px-4 py-3 rounded-xl bg-slate-950 text-white text-center font-black text-sm">
+                  {filteredProperties.length} / {properties.length}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          </aside>
+
+          <section className="space-y-6">
+            {hasFilter && (
+              <div className="p-4 bg-amber-50/80 border border-amber-200/60 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 text-right text-xs text-amber-900 animate-fadeIn shadow-sm">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0" />
+                  <span className="font-bold">
+                    {language === 'ar'
+                      ? '👑 تصفية البحث الفاخرة نشطة حالياً وتعرض نتائج مخصصة تليق بك.'
+                      : '👑 Ultra-private search filtration is active, presenting select estates tailored to you.'}
+                  </span>
+                </div>
+                <button
+                  onClick={resetPropertySearchFilter}
+                  className="px-4 py-2 bg-slate-950 hover:bg-slate-800 text-white font-black rounded-lg transition-all text-[11px] cursor-pointer"
+                >
+                  {language === 'ar' ? 'إعادة تعيين وعرض كافة العقارات ⟲' : 'Reset & Display All Estates ⟲'}
+                </button>
+              </div>
+            )}
+
+            {filteredProperties.length === 0 ? (
+              <div className="text-center py-20 text-neutral-400 font-medium bg-white rounded-2xl border border-neutral-200 shadow-sm">
+                {language === 'ar' ? 'لا توجد عقارات مطابقة لبحثك المخصص حالياً.' : 'No premium estates match your exclusive search terms.'}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                {filteredProperties.map((prop) => (
+                  <div 
+                    key={prop.id}
+                    onClick={() => {
+                      if (onNavigate) {
+                        onNavigate(`property-${prop.id}`);
+                      } else {
+                        setSelectedProperty(prop);
+                      }
+                    }}
+                    className="bg-white rounded-lg border border-neutral-200 overflow-hidden shadow-sm hover:shadow-lg cursor-pointer transition-all duration-300 flex flex-col justify-between"
+                  >
+                    <div className="h-48 relative overflow-hidden bg-neutral-900">
+                      {renderItemImage(prop.featuredImageId, t(prop.type))}
+                      <span className="absolute top-4 right-4 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-black/60 text-white">
+                        {t(prop.type)}
+                      </span>
+                      <span 
+                        className={`absolute bottom-4 left-4 text-[10px] font-semibold px-2 py-0.5 rounded ${
+                          prop.status === 'available' ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-black'
+                        }`}
+                      >
+                        {staticT(prop.status === 'available' ? 'statusAvailable' : prop.status === 'reserved' ? 'statusReserved' : 'statusSold')}
+                      </span>
+                    </div>
+
+                    <div className="p-6 space-y-4 text-right">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1 text-neutral-400 text-xs text-right">
+                          <MapPin className="w-3.5 h-3.5 shrink-0" />
+                          <span>{t(prop.location)}</span>
+                        </div>
+                        <h3 className="font-sans font-bold text-lg text-neutral-900 line-clamp-1">{t(prop.title)}</h3>
+                      </div>
+
+                      <div className="flex justify-between items-center bg-neutral-50 p-2 text-xs text-neutral-500 rounded">
+                        <div className="flex items-center gap-1">
+                          <BedDouble className="w-3.5 h-3.5" />
+                          <span>{prop.bedrooms} {staticT('bedrooms')}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Bath className="w-3.5 h-3.5" />
+                          <span>{prop.bathrooms} {staticT('bathrooms')}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Maximize className="w-3.5 h-3.5" />
+                          <span>{prop.areaSqm} {staticT('sqm')}</span>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-neutral-100 flex items-center justify-between">
+                        <span className="text-xs text-neutral-400">{staticT('sar')}</span>
+                        <span className="font-sans font-extrabold text-lg text-neutral-900">
+                          {displayCurrencyOrNA(prop.price, language)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
 
         {/* Selected Property Detail Modal Overlay */}
         {selectedProperty && (
