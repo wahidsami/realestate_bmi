@@ -15,7 +15,7 @@ import {
   settingsRepository
 } from '../repositories';
 import { Property, Project, Inquiry, PageContent, MediaItem, ActiveAdminTab, BilingualText, HeroSlide } from '../types';
-import { getPropertyTypeFromText, getPropertyTypeLabel, type PropertyPresetType } from '@bina/shared';
+import { getPropertyTypeFromText, getPropertyTypeLabel, type PropertyPresetType, PLACEHOLDER_PROPERTY_FEATURED_MEDIA_ID } from '@bina/shared';
 import { 
   LayoutDashboard, 
   Milestone, 
@@ -2119,8 +2119,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToWebsite }) => {
                               <img src={resolveMediaBase64(projectCoverImageId) || ''} alt="Project Cover" className="max-w-full max-h-full object-contain" referrerPolicy="no-referrer" />
                             </div>
                           ) : (
-                            <div className="w-20 h-20 bg-slate-100 border border-dashed border-slate-300 finished rounded-lg shrink-0 flex items-center justify-center text-slate-400 text-[10px]">
-                              {language === 'ar' ? 'لا يوجد غلاف' : 'No image'}
+                            <div className="w-20 h-20 bg-slate-900 border border-slate-200 rounded-lg overflow-hidden shrink-0 flex items-center justify-center p-1">
+                              <img
+                                src={resolveMediaBase64(PLACEHOLDER_PROPERTY_FEATURED_MEDIA_ID) || ''}
+                                alt="Project placeholder cover"
+                                className="max-w-full max-h-full object-contain"
+                                referrerPolicy="no-referrer"
+                              />
                             </div>
                           )}
                           <div className="space-y-2">
@@ -2514,8 +2519,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToWebsite }) => {
                                   <img src={resolveMediaBase64(proj.coverImageId) || ''} alt="Cover" className="max-w-full max-h-full object-contain" referrerPolicy="no-referrer" />
                                 </div>
                               ) : (
-                                <div className="w-14 h-10 bg-slate-100 rounded border border-dashed border-slate-200 flex items-center justify-center text-slate-400 text-[9px] font-sans">
-                                  {language === 'ar' ? 'بلا غلاف' : 'No Cover'}
+                                <div className="w-14 h-10 bg-slate-900 rounded border border-slate-100 overflow-hidden flex items-center justify-center p-0.5">
+                                  <img
+                                    src={resolveMediaBase64(PLACEHOLDER_PROPERTY_FEATURED_MEDIA_ID) || ''}
+                                    alt="Project placeholder cover"
+                                    className="max-w-full max-h-full object-contain"
+                                    referrerPolicy="no-referrer"
+                                  />
                                 </div>
                               )}
                             </td>
